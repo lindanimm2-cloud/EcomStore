@@ -12,7 +12,7 @@ const PORTALS = [
   },
   {
     title: "Employee",
-    desc: "Dark ops console for CRM, stock and service desk",
+    desc: "Dark ops console for Aheers App, stock and service desk",
     href: "/login/staff",
     icon: Building2,
     className: "from-[#070c0a] to-[#1a2e24]",

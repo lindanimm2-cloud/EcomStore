@@ -20,7 +20,7 @@ function LeadsInner() {
     <div className="flex min-h-screen">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminHeader title="CRM — Sales pipeline" subtitle="Leads · Opportunities · Hardware & PowerTrade" />
+        <AdminHeader title="Sales pipeline" subtitle="Aheers App · Leads · Opportunities · Hardware & PowerTrade" />
         <div className="admin-page">
           <p className="mb-3 text-center text-[11px] text-gray-400 md:hidden">Swipe sideways for more pipeline stages</p>
           <div className="admin-board-scroll">

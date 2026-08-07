@@ -60,7 +60,7 @@ export default function MeetingsPage() {
     <div className="flex min-h-screen">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminHeader title="CRM — Meetings" subtitle="Calls · site visits · video · customer & lead appointments" />
+        <AdminHeader title="Meetings" subtitle="Aheers App · Calls · site visits · video · customer & lead appointments" />
         <div className="admin-page">
           <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-2 overflow-x-auto pb-1">

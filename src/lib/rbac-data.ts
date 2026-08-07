@@ -41,7 +41,7 @@ export const JOB_ROLE_LABELS: Record<JobRole, string> = {
   super_admin: "CEO / Super Admin",
   exec: "Executive",
   store_manager: "Store Manager",
-  crm_manager: "CRM Manager",
+  crm_manager: "Aheers App Manager",
   support_agent: "Support Agent",
   service_counter: "Service Counter",
   inventory_manager: "Inventory Manager",
@@ -60,7 +60,7 @@ export const STAFF_USERS: StaffUser[] = [
   { id: "s3", name: "Priya Moodley", email: "counter@aheers.co.za", phone: "033 413 1201", employeeNo: "EMP-1088", jobRole: "service_counter", title: "Service Counter", store: "Supermarket", status: "active", lastLogin: "2026-06-21" },
   { id: "s4", name: "Sipho Mkhize", email: "dispatch@aheers.co.za", phone: "033 413 1210", employeeNo: "EMP-1101", jobRole: "dispatcher", title: "Dispatcher", store: "Fleet Hub", status: "active", lastLogin: "2026-06-20" },
   { id: "s5", name: "Thabo Nkosi", email: "thabo.driver@aheers.co.za", phone: "083 222 3344", employeeNo: "DRV-02", jobRole: "driver", title: "Delivery Driver", store: "Fleet Hub", status: "active", lastLogin: "2026-06-21" },
-  { id: "s6", name: "Lerato Dlamini", email: "crm@aheers.co.za", phone: "033 413 1220", employeeNo: "EMP-1205", jobRole: "crm_manager", title: "CRM Manager", store: "Head Office", status: "active", lastLogin: "2026-06-19" },
+  { id: "s6", name: "Lerato Dlamini", email: "crm@aheers.co.za", phone: "033 413 1220", employeeNo: "EMP-1205", jobRole: "crm_manager", title: "Aheers App Manager", store: "Head Office", status: "active", lastLogin: "2026-06-19" },
   { id: "s7", name: "Johan van Wyk", email: "stock@aheers.co.za", phone: "033 413 1230", employeeNo: "EMP-1310", jobRole: "inventory_manager", title: "Inventory Manager", store: "Warehouse", status: "active", lastLogin: "2026-06-18" },
   { id: "s8", name: "Fatima Khan", email: "finance@aheers.co.za", phone: "033 413 1240", employeeNo: "EMP-1402", jobRole: "finance_manager", title: "Finance Manager", store: "Head Office", status: "active", lastLogin: "2026-06-17" },
   { id: "s9", name: "Nosipho Cele", email: "marketing@aheers.co.za", phone: "033 413 1250", employeeNo: "EMP-1501", jobRole: "marketing_manager", title: "Marketing Manager", store: "Head Office", status: "invited", lastLogin: "—" },
@@ -70,10 +70,10 @@ export const STAFF_USERS: StaffUser[] = [
 ];
 
 export const PERMISSION_MATRIX: PermissionRow[] = [
-  { resource: "Customer 360", module: "CRM", levels: { super_admin: "full", store_manager: "read", crm_manager: "full", support_agent: "read", service_counter: "read", marketing_manager: "read", finance_manager: "read" } },
-  { resource: "Support tickets", module: "CRM", levels: { super_admin: "full", crm_manager: "full", support_agent: "edit", service_counter: "edit", store_manager: "read" } },
-  { resource: "Lead pipeline", module: "CRM", levels: { super_admin: "full", crm_manager: "full", wholesale_manager: "edit", marketing_manager: "edit", store_manager: "read" } },
-  { resource: "Segments & campaigns", module: "CRM", levels: { super_admin: "full", crm_manager: "edit", marketing_manager: "full", store_manager: "none" } },
+  { resource: "Customer 360", module: "Aheers App", levels: { super_admin: "full", store_manager: "read", crm_manager: "full", support_agent: "read", service_counter: "read", marketing_manager: "read", finance_manager: "read" } },
+  { resource: "Support tickets", module: "Aheers App", levels: { super_admin: "full", crm_manager: "full", support_agent: "edit", service_counter: "edit", store_manager: "read" } },
+  { resource: "Lead pipeline", module: "Aheers App", levels: { super_admin: "full", crm_manager: "full", wholesale_manager: "edit", marketing_manager: "edit", store_manager: "read" } },
+  { resource: "Segments & campaigns", module: "Aheers App", levels: { super_admin: "full", crm_manager: "edit", marketing_manager: "full", store_manager: "none" } },
   { resource: "Place order (on behalf)", module: "Commerce", levels: { super_admin: "full", service_counter: "edit", support_agent: "edit", store_manager: "read", cashier: "none" } },
   { resource: "Refunds", module: "Commerce", levels: { super_admin: "approve", store_manager: "approve", service_counter: "edit", cashier: "edit", finance_manager: "approve" } },
   { resource: "Promotions", module: "Marketing", levels: { super_admin: "approve", marketing_manager: "full", store_manager: "edit", crm_manager: "none" } },

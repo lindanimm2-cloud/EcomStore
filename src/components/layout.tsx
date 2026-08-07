@@ -295,7 +295,7 @@ export function SiteFooter() {
             >
               Employee login →
             </Link>
-            <p className="mt-1 text-xs text-white/40">Staff, CRM, dispatch & ops hub</p>
+            <p className="mt-1 text-xs text-white/40">Staff, Aheers App, dispatch & ops hub</p>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event("aheers:report-issue"))}

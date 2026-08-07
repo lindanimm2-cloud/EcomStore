@@ -21,7 +21,7 @@ function TicketsInner() {
     <div className="flex min-h-screen">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminHeader title="CRM — Support tickets" subtitle="Update status · Assign · Resolve" />
+        <AdminHeader title="Support tickets" subtitle="Aheers App · Update status · Assign · Resolve" />
         <div className="admin-page">
           <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
             {["all", "open", "pending", "resolved"].map((f) => (

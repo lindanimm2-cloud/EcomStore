@@ -30,7 +30,7 @@ export interface ChatThread {
 }
 
 export const TEAM_COLLEAGUES: TeamColleague[] = [
-  { id: "col-priya", name: "Priya Moodley", title: "CRM Lead", branch: "Head Office", phone: "082 100 2001", whatsapp: "27821002001" },
+  { id: "col-priya", name: "Priya Moodley", title: "Aheers App Lead", branch: "Head Office", phone: "082 100 2001", whatsapp: "27821002001" },
   { id: "col-lerato", name: "Lerato Dlamini", title: "Sales Manager", branch: "PowerTrade", phone: "082 100 2002", whatsapp: "27821002002" },
   { id: "col-thandi", name: "Thandi Nkosi", title: "Service Counter", branch: "Supermarket", phone: "082 100 2003", whatsapp: "27821002003" },
   { id: "col-jane", name: "Jane Doe", title: "Hardware Sales", branch: "Hardware", phone: "082 100 2004", whatsapp: "27821002004" },
@@ -43,7 +43,7 @@ export const INITIAL_THREADS: ChatThread[] = [
     id: "ch-priya",
     kind: "dm",
     name: "Priya Moodley",
-    subtitle: "CRM Lead · Head Office",
+    subtitle: "Aheers App Lead · Head Office",
     peerId: "col-priya",
     unread: 2,
     lastAt: "10:42",
@@ -74,7 +74,7 @@ export const INITIAL_THREADS: ChatThread[] = [
     id: "ch-litigation",
     kind: "group",
     name: "Ops desk",
-    subtitle: "Group · Dispatch + CRM + Counter",
+    subtitle: "Group · Dispatch + App + Counter",
     unread: 1,
     lastAt: "08:55",
     preview: "Sipho: Bakkie 2 delayed — rain on R33.",

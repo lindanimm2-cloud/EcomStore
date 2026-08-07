@@ -51,11 +51,11 @@ function CustomersCrmInner() {
       <AdminSidebar />
       <div className="admin-main">
         <AdminHeader
-          title="CRM — Customers"
-          subtitle={`Signed in as ${user?.name} (${user?.title})`}
+          title="Customers"
+          subtitle={`Aheers App · Signed in as ${user?.name} (${user?.title})`}
         />
         <div className="hidden items-center justify-between border-b border-gray-100 bg-white px-8 py-2 text-xs text-gray-500 lg:flex">
-          <span className="truncate">Live CRM workspace · search, 360 view, notes</span>
+          <span className="truncate">Live customer workspace · search, 360 view, notes</span>
           <button
             type="button"
             onClick={() => {
@@ -173,7 +173,7 @@ function CustomersCrmInner() {
                   <input
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
-                    placeholder="Add CRM note…"
+                    placeholder="Add note…"
                     className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm"
                   />
                   <button type="submit" className="btn-primary text-sm">

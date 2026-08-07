@@ -464,7 +464,7 @@ export function CrmSmartLens() {
       {/* Search panel */}
       {panel === "search" && (
         <div className={`${panelShell} w-[min(calc(100vw-16px),20rem)] p-4`}>
-          <h3 className="mb-2 font-display text-base font-semibold text-white">Search CRM</h3>
+          <h3 className="mb-2 font-display text-base font-semibold text-white">Search Aheers App</h3>
           <form
             onSubmit={(e) => {
               e.preventDefault();

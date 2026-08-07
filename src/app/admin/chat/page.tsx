@@ -158,7 +158,7 @@ function TeamChatInner() {
         {
           id: "m0",
           senderId: "me",
-          text: `Hi ${col.name.split(" ")[0]} — starting a thread from CRM.`,
+          text: `Hi ${col.name.split(" ")[0]} — starting a thread from Aheers App.`,
           at: "Now",
           mine: true,
         },

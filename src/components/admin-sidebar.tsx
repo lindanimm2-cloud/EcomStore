@@ -48,7 +48,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     ],
   },
   {
-    title: "CRM",
+    title: "Aheers App",
     items: [
       { href: "/admin/customers", label: "Customers 360", icon: Users },
       { href: "/admin/chat", label: "Team chat", icon: MessageCircle },
@@ -136,7 +136,7 @@ function SidebarBody({
       <div className={`shrink-0 border-b border-white/10 ${compact ? "p-3" : "p-5"}`}>
         <Link href="/admin" className="block" onClick={onNavigate}>
           <p className="text-xs font-medium uppercase tracking-wider text-aheers-gold">Aheers Group</p>
-          <h2 className="font-display text-lg font-semibold">Operations Hub</h2>
+          <h2 className="font-display text-lg font-semibold">Aheers App</h2>
           <p className="text-xs text-white/50">Greytown · KZN</p>
         </Link>
         {user && (
@@ -189,7 +189,7 @@ function SidebarBody({
         </Link>
         <div className="flex items-center gap-2 text-xs text-white/40">
           <Shield className="h-3.5 w-3.5" />
-          CRM · ERP · Demo
+          Aheers App · Demo
         </div>
       </div>
     </div>
@@ -255,7 +255,7 @@ export function AdminSidebar() {
           <Menu className="h-5 w-5" />
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-aheers-green">Aheers</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-aheers-green">Aheers App</p>
           <p className="truncate font-display text-[15px] font-semibold leading-tight text-aheers-green-dark">
             {mobilePageTitle(pathname)}
           </p>
@@ -275,7 +275,7 @@ export function AdminSidebar() {
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-3 py-3">
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-aheers-gold">Menu</p>
-                <p className="truncate font-display text-sm font-semibold">Operations Hub</p>
+                <p className="truncate font-display text-sm font-semibold">Aheers App</p>
               </div>
               <button
                 type="button"

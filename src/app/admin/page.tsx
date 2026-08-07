@@ -408,7 +408,7 @@ export default function AdminDashboard() {
             <section className="surface flex flex-col p-5 xl:col-span-4">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-gold">CRM</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-gold">Aheers App</p>
                   <h2 className="font-display text-lg font-semibold text-aheers-green-dark">Open tasks</h2>
                 </div>
                 <Link href="/admin/tasks" className="text-xs font-semibold text-aheers-green hover:underline">

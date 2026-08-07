@@ -20,7 +20,7 @@ const TABS = [
   },
   {
     href: "/admin/customers",
-    label: "CRM",
+    label: "Aheers",
     icon: Users,
     match: (p: string) =>
       p.startsWith("/admin/customers") || p.startsWith("/admin/leads") || p.startsWith("/admin/tickets"),

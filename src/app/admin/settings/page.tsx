@@ -386,7 +386,7 @@ export default function SettingsPage() {
     if (tab === "notifications") {
       return (
         <div>
-          <SectionTitle title="Notifications" subtitle="Channels for orders, stock and CRM alerts" />
+          <SectionTitle title="Notifications" subtitle="Channels for orders, stock and Aheers App alerts" />
           <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">Alert channels</p>
           <div className="space-y-2">
             {(
@@ -397,7 +397,7 @@ export default function SettingsPage() {
                 ["promoSms", "Promo SMS", "POPIA opt-in only"],
                 ["lowStockAlert", "Low stock alerts", "Ops inbox when SKUs drop"],
                 ["lateDeliveryAlert", "Late delivery alerts", "Fleet ETA slips"],
-                ["ticketSlaAlert", "Ticket SLA alerts", "CRM support queue"],
+                ["ticketSlaAlert", "Ticket SLA alerts", "Support queue"],
               ] as [keyof NotificationSettings, string, string][]
             ).map(([key, label, hint]) => (
               <CheckCard
@@ -428,10 +428,15 @@ export default function SettingsPage() {
             <FieldLabel>Session timeout (minutes)</FieldLabel>
             <DarkInput
               type="number"
+              min={1}
+              max={240}
               value={security.sessionTimeoutMin}
               onChange={(e) => patchSecurity("sessionTimeoutMin", Number(e.target.value))}
               className="max-w-xs"
             />
+            <p className="mt-2 text-xs text-white/40">
+              Auto sign-out after this many minutes of no activity (all portals). Default 15.
+            </p>
           </div>
           <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">Protections</p>
           <div className="space-y-2">
@@ -534,7 +539,7 @@ export default function SettingsPage() {
     if (tab === "calendar") {
       return (
         <div>
-          <SectionTitle title="Display" subtitle="Calendar and CRM workspace preferences" />
+          <SectionTitle title="Display" subtitle="Calendar and Aheers App workspace preferences" />
           <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">
             Preferred calendar view
           </p>
@@ -575,7 +580,7 @@ export default function SettingsPage() {
               checked={display.smartLensOnLaunch}
               onChange={(v) => patchDisplay("smartLensOnLaunch", v)}
               label="Open Aheers Lens on launch"
-              hint="Show the floating CRM bar when Ops Hub loads."
+              hint="Show the floating Lens bar when Ops Hub loads."
             />
           </div>
           <p className="mt-4 text-xs text-white/35">

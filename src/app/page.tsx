@@ -142,12 +142,12 @@ export default function HomePage() {
           <div className="mb-10 text-center">
             <p className="section-label">Operations</p>
             <h2 className="mt-2 font-display text-3xl font-semibold text-aheers-green-dark">
-              One CRM. One inventory. Four businesses.
+              One Aheers App. One inventory. Four businesses.
             </h2>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Users, title: "CRM & Rewards", href: "/admin/customers" },
+              { icon: Users, title: "Aheers App & Rewards", href: "/admin/customers" },
               { icon: ShoppingBag, title: "Orders & Stock", href: "/admin/inventory" },
               { icon: Truck, title: "Fleet Tracker", href: "/admin/fleet" },
               { icon: MapPin, title: "Client Portal", href: "/portal" },

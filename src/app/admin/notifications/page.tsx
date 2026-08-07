@@ -15,7 +15,7 @@ export default function AdminNotificationsPage() {
     <div className="flex min-h-screen">
       <AdminSidebar />
       <div className="admin-main bg-[#f4f5f7]">
-        <AdminHeader title="Notifications" subtitle="Tickets, stock, fleet delays and CRM alerts" />
+        <AdminHeader title="Notifications" subtitle="Tickets, stock, fleet delays and Aheers App alerts" />
         <div className="admin-page">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-gray-500">{unread} unread · {items.length} total</p>

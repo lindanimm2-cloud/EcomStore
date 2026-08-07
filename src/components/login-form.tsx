@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useState, ReactNode } from "react";
+import { FormEvent, useState, useEffect, ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth, UserRole, DEMO_USERS } from "@/lib/auth-context";
+import { useAuth, UserRole, DEMO_USERS, consumeSessionExpiredFlag } from "@/lib/auth-context";
 import { ReportThisButton, reportAppError } from "@/components/report-issue";
 
 const ROLE_HOME: Record<UserRole, string> = {
@@ -129,7 +129,12 @@ export function LoginForm({
   const [phone, setPhone] = useState("0834567890");
   const [otp, setOtp] = useState("123456");
   const [error, setError] = useState("");
+  const [expiredNotice, setExpiredNotice] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (consumeSessionExpiredFlag()) setExpiredNotice(true);
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -179,6 +184,18 @@ export function LoginForm({
       <p className={theme.brand}>{brandLabel}</p>
       <h1 className={`mt-4 font-display text-2xl font-semibold md:text-3xl ${titleColor}`}>{title}</h1>
       <p className={`mt-2 text-sm leading-relaxed ${subColor}`}>{subtitle}</p>
+
+      {expiredNotice && (
+        <div
+          className={
+            variant === "customer" || variant === "trade"
+              ? "mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900"
+              : "mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3.5 py-2.5 text-sm text-amber-100"
+          }
+        >
+          Your session expired after inactivity. Please sign in again.
+        </div>
+      )}
 
       {showOtp && (
         <div className={theme.tabWrap}>

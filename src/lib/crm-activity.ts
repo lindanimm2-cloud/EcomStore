@@ -203,7 +203,7 @@ export const CRM_TASKS: CrmTask[] = [
   },
   {
     id: "TSK-06",
-    title: "Draft weekly CRM pipeline report",
+    title: "Draft weekly Aheers App pipeline report",
     description: "Leads + meetings + open tickets for Sagren",
     status: "todo",
     priority: "medium",

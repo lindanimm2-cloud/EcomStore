@@ -98,7 +98,7 @@ export default function TasksPage() {
     <div className="flex min-h-screen">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminHeader title="CRM — Tasks" subtitle="Follow-ups · quotes · delivery chases · support actions" />
+        <AdminHeader title="Tasks" subtitle="Aheers App · Follow-ups · quotes · delivery chases · support actions" />
         <div className="admin-page">
           <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-h-10 gap-1 rounded-full bg-white p-1 ring-1 ring-gray-200">

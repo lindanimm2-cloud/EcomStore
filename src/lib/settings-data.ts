@@ -142,7 +142,7 @@ export interface DisplaySettings {
 
 export const DEFAULT_PROFILE: ProfileSettings = {
   fullName: "Lerato Dlamini",
-  title: "CRM Lead",
+  title: "Aheers App Lead",
   phone: "+27 82 100 2002",
   email: "crm@aheers.co.za",
   hourlyRate: 0,
@@ -151,7 +151,7 @@ export const DEFAULT_PROFILE: ProfileSettings = {
 
 export const DEFAULT_SECURITY: SecuritySettings = {
   twoFactor: true,
-  sessionTimeoutMin: 45,
+  sessionTimeoutMin: 15,
   requireStrongPassword: true,
   loginAlerts: true,
 };

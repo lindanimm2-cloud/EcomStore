@@ -31,7 +31,7 @@ export default function StaffLoginPage() {
           variant="staff"
           brandLabel="Aheers Ops"
           title="Employee login"
-          subtitle="CRM · inventory · fleet · service desk. Authorised staff only."
+          subtitle="Aheers App · inventory · fleet · service desk. Authorised staff only."
           allowedRoles={["staff", "service_counter", "dispatcher"]}
           demoHint="sagren@ · thandi@ · crm@ · counter@ · dispatch@ / aheers123"
           hideRegister

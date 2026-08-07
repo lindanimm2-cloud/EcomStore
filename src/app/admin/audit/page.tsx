@@ -16,7 +16,7 @@ export default function AuditPage() {
     <div className="flex min-h-screen">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminHeader title="Audit log" subtitle="Immutable trail of sensitive CRM, inventory and settings actions" />
+        <AdminHeader title="Audit log" subtitle="Immutable trail of sensitive Aheers App, inventory and settings actions" />
         <div className="p-6">
           <div className="mb-4 flex items-center gap-3">
             <Shield className="h-5 w-5 text-aheers-green" />

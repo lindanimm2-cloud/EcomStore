@@ -6,7 +6,7 @@ const WORKFLOWS = [
   { name: "New order → Fleet dispatch", trigger: "Order type = delivery", action: "Assign nearest idle vehicle", status: "Active" },
   { name: "VIP customer welcome", trigger: "Customer type = vip, first order", action: "Send WhatsApp + loyalty bonus", status: "Active" },
   { name: "Trade account credit check", trigger: "PowerTrade order > R5,000", action: "Flag for manager approval", status: "Active" },
-  { name: "Competition entry confirmation", trigger: "Portal competition submit", action: "Email + CRM log entry", status: "Demo" },
+  { name: "Competition entry confirmation", trigger: "Portal competition submit", action: "Email + activity log entry", status: "Demo" },
   { name: "Weekly sales digest", trigger: "Every Monday 07:00", action: "Email report to management", status: "Scheduled" },
 ];
 
@@ -20,7 +20,7 @@ export default function AutomationPage() {
           <div className="mb-6 rounded-lg border border-aheers-green/20 bg-aheers-cream p-4">
             <p className="font-semibold text-aheers-green-dark">Automated workflows</p>
             <p className="mt-1 text-sm text-gray-600">
-              Automate repetitive tasks across CRM, inventory, fleet, and customer portal. Connected to one data layer.
+              Automate repetitive tasks across Aheers App, inventory, fleet, and customer portal. Connected to one data layer.
             </p>
           </div>
           <div className="space-y-3">

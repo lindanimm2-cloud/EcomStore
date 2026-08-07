@@ -50,8 +50,8 @@ export default function CalendarPage() {
       <AdminSidebar />
       <div className="admin-main">
         <AdminHeader
-          title="CRM — Calendar"
-          subtitle="Meetings · task due dates · team schedule across stores"
+          title="Calendar"
+          subtitle="Aheers App · Meetings · task due dates · team schedule across stores"
         />
         <div className="admin-page grid gap-5 lg:grid-cols-5">
           <div className="card p-4 sm:p-5 lg:col-span-3">
