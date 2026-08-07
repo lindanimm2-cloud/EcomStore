@@ -92,6 +92,28 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
   },
 ];
 
+function mobilePageTitle(pathname: string) {
+  if (pathname === "/admin") return "Overview";
+  if (pathname.startsWith("/admin/orders")) return "Orders";
+  if (pathname.startsWith("/admin/customers")) return "Customers";
+  if (pathname.startsWith("/admin/leads")) return "Leads";
+  if (pathname.startsWith("/admin/tickets")) return "Tickets";
+  if (pathname.startsWith("/admin/tasks")) return "Tasks";
+  if (pathname.startsWith("/admin/meetings")) return "Meetings";
+  if (pathname.startsWith("/admin/calendar")) return "Calendar";
+  if (pathname.startsWith("/admin/chat")) return "Team chat";
+  if (pathname.startsWith("/admin/fleet")) return "Fleet";
+  if (pathname.startsWith("/admin/inventory")) return "Inventory";
+  if (pathname.startsWith("/admin/notifications")) return "Alerts";
+  if (pathname.startsWith("/admin/settings")) return "Settings";
+  if (pathname.startsWith("/admin/service-desk")) return "Service desk";
+  if (pathname.startsWith("/admin/promotions")) return "Promotions";
+  if (pathname.startsWith("/admin/reports")) return "Reports";
+  if (pathname.startsWith("/admin/segments")) return "Segments";
+  const seg = pathname.split("/").filter(Boolean).pop() ?? "Ops";
+  return seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function SidebarBody({
   compact,
   onNavigate,
@@ -223,19 +245,19 @@ export function AdminSidebar() {
 
   const mobileChrome = (
     <>
-      <div className="fixed left-0 right-0 top-0 z-40 flex items-center gap-3 border-b border-gray-200/80 bg-white/95 px-3 py-2.5 text-aheers-charcoal shadow-[0_4px_20px_rgba(13,61,38,0.04)] backdrop-blur-xl lg:hidden">
+      <div className="fixed left-0 right-0 top-0 z-40 flex items-center gap-3 border-b border-gray-100 bg-white px-3 py-2.5 text-aheers-charcoal lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="shrink-0 rounded-2xl bg-aheers-mist p-2.5 text-aheers-green-dark transition hover:bg-aheers-green/10"
+          className="shrink-0 rounded-xl bg-[#f3f5f4] p-2.5 text-aheers-green-dark"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green">Aheers Ops</p>
-          <p className="truncate font-display text-sm font-semibold leading-tight text-aheers-green-dark">
-            Operations Hub
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-aheers-green">Aheers</p>
+          <p className="truncate font-display text-[15px] font-semibold leading-tight text-aheers-green-dark">
+            {mobilePageTitle(pathname)}
           </p>
         </div>
         <NotificationsBell audience="staff" variant="admin" fullPageHref="/admin/notifications" />

@@ -20,7 +20,7 @@ export default function FleetPage() {
             <StatCard label="Total Vehicles" value={String(FLEET_VEHICLES.length)} icon="truck" color="blue" />
             <StatCard label="Active Now" value={String(active.length)} icon="mapPin" color="green" />
             <StatCard label="Delivering" value={String(delivering.length)} icon="clock" color="amber" />
-            <StatCard label="Drivers" value={String(FLEET_VEHICLES.length)} icon="users" color="purple" />
+            <StatCard label="Drivers" value={String(FLEET_VEHICLES.length)} icon="users" color="gold" />
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">

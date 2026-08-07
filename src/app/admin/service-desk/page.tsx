@@ -16,9 +16,9 @@ export default function ServiceDeskPage() {
           subtitle="Phone & WhatsApp orders · Rewards lookup · EFT confirmation · Delivery scheduling"
         />
         <div className="admin-page">
-          <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4">
-            <p className="font-semibold text-purple-900">Why this matters for Aheers</p>
-            <p className="mt-1 text-sm text-purple-800">
+          <div className="mb-6 rounded-[1.25rem] border border-aheers-green/15 bg-aheers-green/[0.06] p-4">
+            <p className="font-semibold text-aheers-green-dark">Why this matters for Aheers</p>
+            <p className="mt-1 text-sm text-gray-600">
               Many customers still phone or WhatsApp the store. Staff create orders on behalf of customers,
               apply Infinity Rewards cards, schedule deliveries, and track status — one screen.
             </p>

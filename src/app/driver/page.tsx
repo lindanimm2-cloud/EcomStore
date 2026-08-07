@@ -708,8 +708,8 @@ export default function DriverPortalPage() {
       )}
 
       {/* Clean bottom tabs */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_40px_rgba(13,61,38,0.07)]">
-        <ul className="mx-auto flex max-w-lg items-stretch justify-between px-2 pt-1">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white pb-[env(safe-area-inset-bottom)]">
+        <ul className="mx-auto flex max-w-lg items-stretch justify-between px-1 pt-1">
           {(
             [
               { id: "dashboard" as const, label: "Home", icon: LayoutDashboard },
@@ -731,18 +731,12 @@ export default function DriverPortalPage() {
                     }
                     setView(tab.id);
                   }}
-                  className={`relative flex min-h-[3.4rem] w-full flex-col items-center justify-center gap-0.5 rounded-2xl px-1 transition ${
+                  className={`relative flex min-h-[3.35rem] w-full flex-col items-center justify-center gap-1 px-1 transition ${
                     active ? "text-aheers-green" : "text-gray-400"
                   }`}
                 >
-                  <span
-                    className={`flex h-9 w-9 items-center justify-center rounded-2xl transition ${
-                      active ? "bg-aheers-green text-white shadow-soft" : ""
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.85} />
-                  </span>
-                  <span className={`text-[10px] font-semibold ${active ? "text-aheers-green-dark" : ""}`}>
+                  <Icon className="h-5 w-5" strokeWidth={active ? 2.35 : 1.75} />
+                  <span className={`text-[10px] ${active ? "font-bold text-aheers-green-dark" : "font-medium"}`}>
                     {tab.label}
                   </span>
                   {"badge" in tab && tab.badge > 0 && (

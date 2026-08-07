@@ -90,25 +90,76 @@ export default function AdminDashboard() {
             />
           </div>
 
-          {/* KPI grid */}
+          {/* KPI grid — ADOL layout */}
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
-            <StatCard label="Active Customers" value={String(CUSTOMERS.length)} change="+2 this week" icon="users" color="blue" />
             <StatCard
-              label="Orders Today"
-              value={String(ORDERS.length)}
-              change={`${activeOrders.length} open`}
-              icon="shoppingBag"
+              label="Active customers"
+              value={String(CUSTOMERS.length)}
+              change="+12%"
+              changeUp
+              icon="users"
               color="green"
             />
-            <StatCard label="Products Listed" value={String(PRODUCTS.length)} change="In catalogue" icon="package" color="purple" />
             <StatCard
-              label="Fleet Active"
+              label="Orders today"
+              value={String(ORDERS.length)}
+              change="+8%"
+              changeUp
+              icon="shoppingBag"
+              color="blue"
+            />
+            <StatCard
+              label="Products listed"
+              value={String(PRODUCTS.length)}
+              change="+4%"
+              changeUp
+              icon="package"
+              color="gold"
+            />
+            <StatCard
+              label="Fleet active"
               value={`${activeFleet.length}/${FLEET_VEHICLES.length}`}
-              change="Live tracking"
+              change="-2%"
+              changeUp={false}
               icon="truck"
               color="amber"
             />
           </div>
+
+          {/* Overview bars — mobile */}
+          <section className="mobile-stat xl:hidden">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Overview</h2>
+              <div className="flex rounded-full bg-[#f3f5f4] p-0.5 text-[11px] font-semibold">
+                <span className="rounded-full px-2.5 py-1 text-gray-400">Today</span>
+                <span className="rounded-full bg-aheers-green px-2.5 py-1 text-white">Week</span>
+                <span className="rounded-full px-2.5 py-1 text-gray-400">Month</span>
+              </div>
+            </div>
+            <div className="flex h-36 items-end justify-between gap-1.5 px-1">
+              {[
+                { d: "Su", h: 42 },
+                { d: "Mo", h: 68 },
+                { d: "Tu", h: 55 },
+                { d: "We", h: 88 },
+                { d: "Th", h: 72 },
+                { d: "Fr", h: 95 },
+                { d: "Sa", h: 60 },
+              ].map(({ d, h }) => (
+                <div key={d} className="flex flex-1 flex-col items-center gap-2">
+                  <div className="flex h-28 w-full items-end justify-center">
+                    <div
+                      className={`w-full max-w-[1.65rem] rounded-t-lg ${
+                        d === "We" ? "bg-aheers-green" : "bg-aheers-green/25"
+                      }`}
+                      style={{ height: `${h}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-medium text-gray-400">{d}</span>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* Target progress — mobile-first clean card */}
           <section className="mobile-stat flex items-center gap-4 p-5 xl:hidden">

@@ -8,6 +8,8 @@ import {
   Truck,
   MapPin,
   Clock,
+  TrendingUp,
+  TrendingDown,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationsBell } from "@/components/notifications-bell";
@@ -33,25 +35,29 @@ export function AdminHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="border-b border-gray-100 bg-white px-4 py-4 md:px-8 md:py-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display text-[1.35rem] font-semibold tracking-tight text-aheers-green-dark md:text-2xl">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-gray-500 md:line-clamp-none md:text-sm">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          {actions}
-          <NotificationsBell audience="staff" variant="admin" fullPageHref="/admin/notifications" />
+    <>
+      {/* Desktop / tablet page header */}
+      <div className="hidden border-b border-gray-100/80 bg-white px-8 py-5 lg:block">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-aheers-green-dark">
+              {title}
+            </h1>
+            {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {actions}
+            <NotificationsBell audience="staff" variant="admin" fullPageHref="/admin/notifications" />
+          </div>
         </div>
       </div>
-      {actions && <div className="mt-3 flex flex-wrap gap-2 lg:hidden">{actions}</div>}
-    </div>
+      {/* Mobile: actions only (title lives in top ops bar) */}
+      {actions && (
+        <div className="flex flex-wrap gap-2 border-b border-gray-100 bg-white px-4 py-3 lg:hidden">
+          {actions}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -59,69 +65,100 @@ export function StatCard({
   label,
   value,
   change,
+  changeUp,
   icon,
-  color = "blue",
+  color = "green",
 }: {
   label: string;
   value: string;
   change?: string;
+  /** When set with change, shows trend arrow (ADOL-style) */
+  changeUp?: boolean;
   icon: StatIconName;
-  color?: "blue" | "green" | "amber" | "purple";
+  color?: "blue" | "green" | "amber" | "gold";
 }) {
   const Icon: LucideIcon = STAT_ICONS[icon];
   const colors = {
-    blue: "bg-aheers-cream text-aheers-green",
-    green: "bg-green-50 text-aheers-green",
+    blue: "bg-[#e8f2ec] text-aheers-green",
+    green: "bg-aheers-green/10 text-aheers-green",
     amber: "bg-amber-50 text-amber-700",
-    purple: "bg-purple-50 text-purple-700",
+    gold: "bg-aheers-gold/20 text-aheers-green-dark",
   };
+
   return (
-    <div className="mobile-stat sm:card sm:rounded-2xl sm:p-5 sm:shadow-soft">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-gray-500 sm:text-sm">{label}</p>
-          <p className="mt-1.5 text-2xl font-bold tracking-tight text-aheers-charcoal">{value}</p>
-          {change && <p className="mt-1.5 text-xs font-semibold text-aheers-green">{change}</p>}
-        </div>
-        <div className={`rounded-2xl p-2.5 ${colors[color]}`}>
-          <Icon className="h-5 w-5" />
-        </div>
+    <div className="mobile-stat">
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${colors[color]}`}>
+          <Icon className="h-4.5 w-4.5 h-[1.125rem] w-[1.125rem]" />
+        </span>
+        {change && (
+          <span
+            className={`inline-flex items-center gap-0.5 text-[11px] font-bold ${
+              changeUp === false ? "text-red-500" : "text-emerald-600"
+            }`}
+          >
+            {changeUp === false ? (
+              <TrendingDown className="h-3 w-3" />
+            ) : (
+              <TrendingUp className="h-3 w-3" />
+            )}
+            {change}
+          </span>
+        )}
       </div>
+      <p className="text-[1.75rem] font-bold leading-none tracking-tight text-aheers-charcoal">{value}</p>
+      <p className="mt-2 text-xs font-medium text-gray-500">{label}</p>
     </div>
   );
 }
 
 export function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
+    vip: "bg-aheers-gold/20 text-aheers-green-dark",
+    invited: "bg-amber-100 text-amber-800",
+    disabled: "bg-red-50 text-red-600",
+    scheduled: "bg-aheers-mist text-aheers-green-dark",
+    ended: "bg-gray-100 text-gray-500",
+    open: "bg-amber-100 text-amber-800",
+    resolved: "bg-green-100 text-green-700",
+    maintenance: "bg-orange-100 text-orange-800",
+    low: "bg-slate-100 text-slate-600",
+    medium: "bg-aheers-mist text-aheers-green-dark",
+    high: "bg-amber-100 text-amber-800",
+    blocker: "bg-red-100 text-red-700",
+    in_progress: "bg-aheers-green/10 text-aheers-green-dark",
+    processing: "bg-aheers-mist text-aheers-green-dark",
     pending: "bg-gray-100 text-gray-700",
-    processing: "bg-blue-100 text-blue-700",
     dispatched: "bg-amber-100 text-amber-700",
     delivered: "bg-green-100 text-green-700",
     cancelled: "bg-red-100 text-red-700",
     active: "bg-green-100 text-green-700",
     inactive: "bg-gray-100 text-gray-500",
     idle: "bg-gray-100 text-gray-600",
-    "en-route": "bg-blue-100 text-blue-700",
+    "en-route": "bg-aheers-mist text-aheers-green-dark",
     delivering: "bg-amber-100 text-amber-700",
     returning: "bg-green-100 text-green-700",
-    retail: "bg-blue-100 text-blue-700",
+    retail: "bg-aheers-mist text-aheers-green-dark",
     trade: "bg-orange-100 text-orange-700",
-    vip: "bg-purple-100 text-purple-700",
-    invited: "bg-amber-100 text-amber-800",
-    disabled: "bg-red-50 text-red-600",
-    scheduled: "bg-blue-100 text-blue-700",
-    ended: "bg-gray-100 text-gray-500",
-    open: "bg-amber-100 text-amber-800",
-    resolved: "bg-green-100 text-green-700",
-    maintenance: "bg-orange-100 text-orange-800",
-    low: "bg-slate-100 text-slate-600",
-    medium: "bg-blue-100 text-blue-700",
-    high: "bg-amber-100 text-amber-800",
-    blocker: "bg-red-100 text-red-700",
-    in_progress: "bg-violet-100 text-violet-700",
+    todo: "bg-gray-100 text-gray-700",
+    overdue: "bg-red-50 text-red-700",
+    done: "bg-green-100 text-green-700",
+    call: "bg-aheers-mist text-aheers-green-dark",
+    video: "bg-aheers-green/10 text-aheers-green-dark",
+    "in-person": "bg-aheers-gold/15 text-aheers-green-dark",
+    "site-visit": "bg-amber-50 text-amber-800",
+    "follow-up": "bg-aheers-mist text-aheers-green-dark",
+    quote: "bg-aheers-gold/15 text-aheers-green-dark",
+    delivery: "bg-amber-50 text-amber-800",
+    support: "bg-aheers-green/10 text-aheers-green-dark",
+    internal: "bg-gray-100 text-gray-600",
   };
   return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${styles[status] ?? "bg-gray-100 text-gray-600"}`}>
+    <span
+      className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${
+        styles[status] ?? "bg-gray-100 text-gray-600"
+      }`}
+    >
       {status.replace(/[-_]/g, " ")}
     </span>
   );
@@ -132,28 +169,34 @@ export function DataTable({
   rows,
 }: {
   headers: string[];
-  rows: (string | React.ReactNode)[][];
+  rows: (string | ReactNode)[][];
 }) {
   return (
     <div className="card overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="border-b border-gray-200 bg-gray-50">
-          <tr>
-            {headers.map((h) => (
-              <th key={h} className="px-4 py-3 text-left font-semibold text-gray-600">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-              {row.map((cell, j) => (
-                <td key={j} className="px-4 py-3 text-gray-700">{cell}</td>
+      <div className="overflow-x-auto overscroll-x-contain">
+        <table className="w-full min-w-[40rem] text-sm">
+          <thead className="border-b border-gray-100 bg-[#f7f8f9]">
+            <tr>
+              {headers.map((h) => (
+                <th key={h} className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {h}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80">
+                {row.map((cell, j) => (
+                  <td key={j} className="whitespace-nowrap px-4 py-3.5 text-gray-700">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

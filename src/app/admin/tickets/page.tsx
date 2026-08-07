@@ -37,7 +37,7 @@ function TicketsInner() {
           </div>
           <div className="space-y-3">
             {list.map((t) => (
-              <div key={t.id} className="card p-4 sm:p-5">
+              <div key={t.id} className="mobile-stat !p-4 sm:card sm:!rounded-2xl sm:!p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <p className="font-mono text-xs text-gray-400">{t.id}</p>
@@ -47,11 +47,13 @@ function TicketsInner() {
                     </p>
                     <p className="mt-1 text-xs text-gray-400">Assignee: {t.assignee}</p>
                   </div>
-                  <div className="flex w-full flex-row flex-wrap items-center gap-2 sm:w-40 sm:flex-col sm:items-end">
-                    <StatusBadge status={t.status} />
-                    <StatusBadge status={t.priority} />
+                  <div className="flex w-full flex-col gap-2 sm:w-44 sm:items-stretch">
+                    <div className="flex flex-wrap gap-2">
+                      <StatusBadge status={t.status} />
+                      <StatusBadge status={t.priority} />
+                    </div>
                     <PrettySelect
-                      className="w-full sm:w-auto"
+                      className="w-full"
                       value={t.status}
                       onChange={(v) => setStatus(t.id, v as "open" | "pending" | "resolved")}
                       options={[

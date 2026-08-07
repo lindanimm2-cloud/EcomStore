@@ -14,6 +14,7 @@ import {
   DeliveryJob,
 } from "@/lib/delivery-queue";
 import { STORES } from "@/lib/stores";
+import { PrettySelect } from "@/components/pretty-select";
 import { ArrowLeft, Truck, MapPin, Clock, Phone, Plus, CheckCircle } from "lucide-react";
 
 export default function DeliveriesPage() {
@@ -105,14 +106,12 @@ export default function DeliveriesPage() {
                 Sends a job to the driver delivery queue as <strong>New</strong> (customer request). Drivers can accept it from the app.
               </p>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">Store</label>
-                <select className="field" value={storeSlug} onChange={(e) => setStoreSlug(e.target.value)}>
-                  {STORES.map((s) => (
-                    <option key={s.slug} value={s.slug}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                <PrettySelect
+                  label="Store"
+                  value={storeSlug}
+                  onChange={setStoreSlug}
+                  options={STORES.map((s) => ({ value: s.slug, label: s.name }))}
+                />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-gray-500">Delivery address</label>

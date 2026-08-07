@@ -54,7 +54,7 @@ function CustomersCrmInner() {
           title="CRM — Customers"
           subtitle={`Signed in as ${user?.name} (${user?.title})`}
         />
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 text-xs text-gray-500 md:px-8">
+        <div className="hidden items-center justify-between border-b border-gray-100 bg-white px-8 py-2 text-xs text-gray-500 lg:flex">
           <span className="truncate">Live CRM workspace · search, 360 view, notes</span>
           <button
             type="button"
@@ -71,12 +71,12 @@ function CustomersCrmInner() {
           <div className="lg:col-span-2">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row">
               <div className="relative min-w-0 flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search name, phone, card…"
-                  className="w-full rounded-lg border border-gray-200 py-2.5 pl-9 pr-3 text-sm"
+                  className="mobile-search lg:rounded-xl lg:border lg:border-gray-200 lg:bg-white lg:py-2.5 lg:pl-9 lg:focus:bg-white"
                 />
               </div>
               <PrettySelect
@@ -91,14 +91,14 @@ function CustomersCrmInner() {
                 ]}
               />
             </div>
-            <div className="card max-h-[50vh] divide-y divide-gray-100 overflow-y-auto lg:max-h-[70vh]">
+            <div className="card max-h-[42vh] divide-y divide-gray-50 overflow-y-auto rounded-[1.25rem] lg:max-h-[70vh]">
               {filtered.map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => setSelectedId(c.id)}
-                  className={`flex w-full items-start justify-between px-4 py-3 text-left hover:bg-gray-50 ${
-                    selected?.id === c.id ? "bg-aheers-cream" : ""
+                  className={`flex w-full items-start justify-between px-4 py-3.5 text-left transition ${
+                    selected?.id === c.id ? "bg-aheers-green/[0.06]" : "hover:bg-gray-50"
                   }`}
                 >
                   <div>
