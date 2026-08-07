@@ -6,9 +6,9 @@ export default function PortalAdminPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Client Portal Configuration" subtitle="Customer-facing portal · Professional Plan module" />
-        <div className="p-8">
+        <div className="admin-page">
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="card p-6">
               <h3 className="mb-4 font-semibold">Portal Features Enabled</h3>

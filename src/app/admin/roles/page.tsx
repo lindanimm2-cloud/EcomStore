@@ -35,7 +35,7 @@ export default function RolesPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader
           title="Roles & permissions"
           subtitle="RBAC matrix · Scope by store · Approval thresholds (demo)"

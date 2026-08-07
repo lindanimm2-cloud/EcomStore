@@ -15,7 +15,7 @@ export default function PromotionsPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Promotions" subtitle="SKU deals · Bundles · Trade pricing · Store scope" />
         <div className="p-6">
           <div className="mb-4 flex justify-end">

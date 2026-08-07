@@ -10,12 +10,12 @@ export default function FleetPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader
           title="Fleet Tracker"
           subtitle="Live GPS · Route monitoring · Driver management · Greytown fleet"
         />
-        <div className="p-8">
+        <div className="admin-page">
           <div className="mb-6 grid gap-4 sm:grid-cols-4">
             <StatCard label="Total Vehicles" value={String(FLEET_VEHICLES.length)} icon="truck" color="blue" />
             <StatCard label="Active Now" value={String(active.length)} icon="mapPin" color="green" />

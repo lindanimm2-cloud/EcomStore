@@ -47,6 +47,8 @@ export function SettingsFab() {
   const [toast, setToast] = useState("");
 
   if (!pathname.startsWith("/admin")) return null;
+  // Keep chat mobile clean — wrench lives in Settings hub / Lens
+  if (pathname.startsWith("/admin/chat")) return null;
 
   function flash(msg: string) {
     setToast(msg);
@@ -282,7 +284,7 @@ export function SettingsFab() {
       <button
         type="button"
         onClick={() => setPanel(panel ? null : "menu")}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-white text-aheers-charcoal shadow-lift ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg"
+        className="fixed bottom-6 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-aheers-green-dark text-aheers-gold shadow-lift ring-1 ring-aheers-gold/25 transition hover:-translate-y-0.5 hover:bg-aheers-green sm:left-auto sm:right-6 sm:h-14 sm:w-14 sm:bg-white sm:text-aheers-charcoal sm:ring-black/5"
         aria-label="Settings"
       >
         {panel ? <X className="h-5 w-5" /> : <Wrench className="h-5 w-5" />}

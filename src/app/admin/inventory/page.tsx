@@ -9,9 +9,9 @@ export default function InventoryPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Inventory Management" subtitle="Real-time stock across Supermarket, PowerTrade & Grab n Go" />
-        <div className="p-8">
+        <div className="admin-page">
           {lowStock.length > 0 && (
             <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
               <p className="font-semibold text-amber-800">⚠ Low Stock Alert — {lowStock.length} items below 30 units</p>

@@ -57,9 +57,18 @@ export function CrmSmartLens() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_POS);
-      if (raw) setPos(clampPos(JSON.parse(raw)));
-      else if (window.innerWidth < 768) setPos({ x: 8, y: 64 });
-      else setPos({ x: 280, y: 14 });
+      if (raw) {
+        setPos(clampPos(JSON.parse(raw)));
+      } else {
+        // Default: top-right, clear of sidebar + mobile ops header
+        const w = Math.min(window.innerWidth < 768 ? 220 : 360, window.innerWidth - 24);
+        setPos(
+          clampPos({
+            x: Math.max(8, window.innerWidth - w - 16),
+            y: window.innerWidth < 1024 ? 64 : 16,
+          })
+        );
+      }
       if (localStorage.getItem(STORAGE_HIDDEN) === "1") setHidden(true);
       else {
         const settings = localStorage.getItem("aheers-settings-v1");
@@ -123,6 +132,8 @@ export function CrmSmartLens() {
   }, [dragging]);
 
   if (!pathname.startsWith("/admin")) return null;
+  // Chat has its own full-screen mobile UI — Lens covers back / composer
+  if (pathname.startsWith("/admin/chat")) return null;
 
   const firstName = user?.name?.split(" ")[0] ?? "Staff";
   const totalBadge = staffUnread + chatUnread;
@@ -155,7 +166,7 @@ export function CrmSmartLens() {
       <button
         type="button"
         onClick={showBar}
-        className="fixed bottom-24 right-6 z-[55] flex h-12 w-12 items-center justify-center rounded-2xl bg-aheers-green-dark text-aheers-gold shadow-lift ring-1 ring-aheers-gold/30 transition hover:scale-105 hover:bg-aheers-green"
+        className="fixed bottom-24 right-4 z-[55] flex h-12 w-12 items-center justify-center rounded-2xl bg-aheers-green-dark text-aheers-gold shadow-lift ring-1 ring-aheers-gold/30 transition hover:scale-105 hover:bg-aheers-green sm:right-6"
         aria-label="Open Aheers Lens"
         title="Open Aheers Lens"
       >

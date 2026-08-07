@@ -17,11 +17,14 @@ import {
   CalendarDays,
   CheckSquare,
   Video,
-  Paperclip,
   Smile,
   Phone,
   PhoneCall,
   Search,
+  ArrowLeft,
+  Plus,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 export default function TeamChatPage() {
@@ -29,6 +32,38 @@ export default function TeamChatPage() {
     <Suspense fallback={<div className="flex min-h-screen bg-[#0b0f0d]" />}>
       <TeamChatInner />
     </Suspense>
+  );
+}
+
+function PreviewLine({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const long = text.length > 52;
+  return (
+    <div className="mt-0.5">
+      <p className={`text-xs leading-snug text-white/50 ${expanded ? "whitespace-normal" : "line-clamp-1"}`}>
+        {text}
+      </p>
+      {long && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+          className="mt-1 inline-flex items-center gap-0.5 text-[11px] font-semibold text-aheers-gold"
+        >
+          {expanded ? (
+            <>
+              Show less <ChevronUp className="h-3 w-3" />
+            </>
+          ) : (
+            <>
+              Show more <ChevronDown className="h-3 w-3" />
+            </>
+          )}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -41,11 +76,15 @@ function TeamChatInner() {
   const [q, setQ] = useState("");
   const [newPeer, setNewPeer] = useState(TEAM_COLLEAGUES[0].id);
   const [toast, setToast] = useState("");
+  /** Mobile: list vs open conversation (desktop always shows both) */
+  const [mobilePane, setMobilePane] = useState<"list" | "thread">("list");
+  const [newChatOpen, setNewChatOpen] = useState(false);
 
   useEffect(() => {
     const thread = searchParams.get("thread");
     if (thread && INITIAL_THREADS.some((t) => t.id === thread)) {
       setActiveId(thread);
+      setMobilePane("thread");
       setThreads((prev) => prev.map((t) => (t.id === thread ? { ...t, unread: 0 } : t)));
     }
   }, [searchParams]);
@@ -71,6 +110,8 @@ function TeamChatInner() {
 
   function openThread(id: string) {
     setActiveId(id);
+    setMobilePane("thread");
+    setNewChatOpen(false);
     setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, unread: 0 } : t)));
   }
 
@@ -125,79 +166,123 @@ function TeamChatInner() {
     };
     setThreads((prev) => [neu, ...prev]);
     setActiveId(neu.id);
+    setMobilePane("thread");
+    setNewChatOpen(false);
     flash(`Started chat with ${col.name}`);
   }
 
   const unreadTotal = threads.reduce((s, t) => s + t.unread, 0);
+  const showList = mobilePane === "list";
+  const showThread = mobilePane === "thread";
 
   return (
-    <div className="flex min-h-screen bg-[#0b0f0d]">
+    <div className="flex h-[calc(100dvh-3.5rem)] max-w-[100vw] overflow-hidden bg-[#0b0f0d] lg:h-dvh">
       <AdminSidebar />
-      <div className="flex min-h-screen flex-1 flex-col pt-16 text-white">
-        <div className="flex flex-wrap items-end justify-between gap-3 px-4 pb-2 md:px-6">
-          <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-white md:text-4xl">Team chat</h1>
-            <p className="mt-1 text-sm text-white/45">
-              Hi {meName} · Internal WhatsApp-style · {unreadTotal} unread
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/admin/meetings"
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[#141a17] px-3 py-1.5 text-xs font-medium text-white/80 hover:border-aheers-gold/40 hover:text-aheers-gold"
-            >
-              <Video className="h-3.5 w-3.5" /> Meetings
-            </Link>
-            <Link
-              href="/admin/tasks"
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[#141a17] px-3 py-1.5 text-xs font-medium text-white/80 hover:border-aheers-gold/40 hover:text-aheers-gold"
-            >
-              <CheckSquare className="h-3.5 w-3.5" /> Tasks
-            </Link>
-            <Link
-              href="/admin/calendar"
-              className="inline-flex items-center gap-1.5 rounded-full border border-aheers-gold/30 bg-aheers-gold/15 px-3 py-1.5 text-xs font-semibold text-aheers-gold"
-            >
-              <CalendarDays className="h-3.5 w-3.5" /> Calendar
-            </Link>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden text-white">
+        {/* Page chrome — list only on mobile */}
+        <div
+          className={`shrink-0 px-3 pb-2 pt-2 md:px-6 md:pt-3 ${
+            showThread ? "hidden lg:block" : ""
+          }`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h1 className="font-display text-xl font-semibold tracking-tight text-white md:text-3xl">
+                Team chat
+              </h1>
+              <p className="mt-0.5 truncate text-xs text-white/45 md:text-sm">
+                Hi {meName} · {unreadTotal} unread
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-1.5 overflow-x-auto">
+              <Link
+                href="/admin/meetings"
+                className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#141a17] px-2.5 py-1.5 text-[11px] font-medium text-white/80 md:px-3 md:text-xs"
+              >
+                <Video className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Meetings</span>
+              </Link>
+              <Link
+                href="/admin/tasks"
+                className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#141a17] px-2.5 py-1.5 text-[11px] font-medium text-white/80 md:px-3 md:text-xs"
+              >
+                <CheckSquare className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Tasks</span>
+              </Link>
+              <Link
+                href="/admin/calendar"
+                className="inline-flex items-center gap-1 rounded-full border border-aheers-gold/30 bg-aheers-gold/15 px-2.5 py-1.5 text-[11px] font-semibold text-aheers-gold md:px-3 md:text-xs"
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Calendar</span>
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div className="mx-4 mb-4 grid min-h-0 flex-1 gap-3 overflow-hidden rounded-3xl border border-white/10 bg-[#101612] md:mx-6 md:mb-6 lg:grid-cols-[280px_1fr]">
-          {/* Sidebar chats */}
-          <aside className="flex flex-col border-b border-white/10 lg:border-b-0 lg:border-r">
-            <div className="flex items-center justify-between px-4 py-3">
+        <div
+          className={`grid min-h-0 min-w-0 flex-1 overflow-hidden bg-[#101612] lg:mx-6 lg:mb-6 lg:grid-cols-[minmax(260px,300px)_1fr] lg:rounded-3xl lg:border lg:border-white/10 ${
+            showThread
+              ? "mx-0 mb-0 rounded-none border-0"
+              : "mx-2 mb-2 rounded-2xl border border-white/10 sm:mx-4 sm:mb-4"
+          }`}
+        >
+          {/* Chat list */}
+          <aside
+            className={`min-h-0 min-w-0 flex-col border-white/10 lg:flex lg:border-r ${
+              showList ? "flex" : "hidden"
+            }`}
+          >
+            <div className="flex shrink-0 items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
               <h2 className="text-sm font-semibold text-white/90">Chats</h2>
-              <button
-                type="button"
-                onClick={() => flash("Internal call (demo)")}
-                className="text-xs font-semibold text-aheers-gold hover:underline"
-              >
-                Internal call
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => flash("Internal call (demo)")}
+                  className="text-xs font-semibold text-aheers-gold hover:underline"
+                >
+                  Call
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewChatOpen((v) => !v)}
+                  className="inline-flex min-h-9 items-center gap-1 rounded-full bg-aheers-gold px-3 py-1.5 text-[11px] font-bold text-aheers-green-dark lg:hidden"
+                >
+                  <Plus className="h-3.5 w-3.5" /> New
+                </button>
+              </div>
             </div>
-            <div className="px-3 pb-2">
+
+            <div className="shrink-0 px-3 pb-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/35" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search chats…"
-                  className="w-full rounded-xl border border-white/10 bg-[#0b0f0d] py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-aheers-gold/40"
+                  style={{ backgroundColor: "#0b0f0d", color: "#fff" }}
+                  className="w-full rounded-xl border border-white/10 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/35 outline-none [color-scheme:dark] focus:border-aheers-gold/40"
                 />
               </div>
             </div>
-            <ul className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
+
+            <ul className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain px-2 pb-3">
               {filtered.map((t) => (
                 <li key={t.id}>
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => openThread(t.id)}
-                    className={`flex w-full items-start gap-3 rounded-2xl px-3 py-2.5 text-left transition ${
-                      t.id === active?.id ? "bg-aheers-gold/15 ring-1 ring-aheers-gold/30" : "hover:bg-white/5"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") openThread(t.id);
+                    }}
+                    className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl px-3 py-3 text-left transition active:scale-[0.99] ${
+                      t.id === active?.id
+                        ? "bg-aheers-gold/15 ring-1 ring-aheers-gold/30"
+                        : "hover:bg-white/5"
                     }`}
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aheers-gold text-xs font-bold text-aheers-green-dark">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-aheers-gold text-xs font-bold text-aheers-green-dark">
                       {initials(t.name)}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -205,19 +290,26 @@ function TeamChatInner() {
                         <span className="truncate text-sm font-semibold text-white">{t.name}</span>
                         <span className="shrink-0 text-[10px] text-white/35">{t.lastAt}</span>
                       </span>
-                      <span className="mt-0.5 block truncate text-xs text-white/45">{t.preview}</span>
+                      <PreviewLine text={t.preview} />
                     </span>
                     {t.unread > 0 && (
-                      <span className="mt-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark">
+                      <span className="mt-1 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark">
                         {t.unread}
                       </span>
                     )}
-                  </button>
+                  </div>
                 </li>
               ))}
+              {filtered.length === 0 && (
+                <li className="px-4 py-10 text-center text-sm text-white/40">No chats match your search</li>
+              )}
             </ul>
 
-            <div className="border-t border-white/10 p-3">
+            <div
+              className={`shrink-0 border-t border-white/10 p-3 ${
+                newChatOpen ? "block" : "hidden lg:block"
+              }`}
+            >
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/35">New chat</p>
               <div className="space-y-2">
                 <PrettySelect
@@ -235,78 +327,91 @@ function TeamChatInner() {
                   onClick={startChat}
                   className="w-full rounded-full bg-aheers-gold py-2.5 text-sm font-bold text-aheers-green-dark transition hover:bg-[#d4b03a]"
                 >
-                  Start
+                  Start chat
                 </button>
               </div>
             </div>
           </aside>
 
           {/* Conversation */}
-          <section className="flex min-h-[420px] flex-col">
+          <section
+            className={`min-h-0 min-w-0 flex-col lg:flex ${showThread ? "flex" : "hidden"}`}
+          >
             {active && (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3 md:px-5">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-aheers-gold text-sm font-bold text-aheers-green-dark">
-                      {initials(active.name)}
-                    </span>
-                    <div>
-                      <p className="font-semibold text-white">{active.name}</p>
-                      <p className="text-xs text-white/45">{active.subtitle ?? active.kind}</p>
-                    </div>
+                <div className="flex shrink-0 items-center gap-1 border-b border-white/10 bg-[#0d1210] px-1 py-2 sm:gap-3 sm:px-4 sm:py-3">
+                  <button
+                    type="button"
+                    onClick={() => setMobilePane("list")}
+                    className="inline-flex min-h-11 min-w-[4.5rem] shrink-0 items-center gap-1 rounded-xl px-2 text-sm font-semibold text-aheers-gold hover:bg-white/5 active:bg-white/10 lg:hidden"
+                    aria-label="Back to chats"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                    Chats
+                  </button>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aheers-gold text-sm font-bold text-aheers-green-dark">
+                    {initials(active.name)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-white">{active.name}</p>
+                    <p className="truncate text-[11px] text-white/45 sm:text-xs">
+                      {active.subtitle ?? active.kind}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex shrink-0 gap-1 sm:gap-2">
                     <button
                       type="button"
                       onClick={() => flash("Video call started (demo)")}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-aheers-gold px-3.5 py-2 text-xs font-bold text-aheers-green-dark"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-aheers-gold text-aheers-green-dark sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-2"
+                      aria-label="Video call"
+                      title="Video call"
                     >
-                      <Video className="h-3.5 w-3.5" /> Video call
+                      <Video className="h-4 w-4" />
+                      <span className="hidden text-xs font-bold sm:inline">Video</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => flash("Audio call ringing (demo)")}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-2 text-xs font-semibold text-white/85 hover:border-aheers-gold/40"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/85 hover:border-aheers-gold/40 sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-2"
+                      aria-label="Audio call"
                     >
-                      <PhoneCall className="h-3.5 w-3.5" /> Audio call
+                      <PhoneCall className="h-4 w-4" />
+                      <span className="hidden text-xs font-semibold sm:inline">Audio</span>
                     </button>
                     {peer?.phone && (
                       <a
                         href={`tel:${peer.phone.replace(/\s/g, "")}`}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-2 text-xs font-semibold text-white/85 hover:border-aheers-gold/40"
+                        className="hidden h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/85 sm:inline-flex"
+                        aria-label="Phone"
                       >
-                        <Phone className="h-3.5 w-3.5" /> Phone
-                      </a>
-                    )}
-                    {peer?.whatsapp && (
-                      <a
-                        href={`https://wa.me/${peer.whatsapp}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-2 text-xs font-semibold text-white/85 hover:border-aheers-gold/40"
-                      >
-                        WhatsApp
+                        <Phone className="h-4 w-4" />
                       </a>
                     )}
                   </div>
                 </div>
 
-                <div className="flex-1 space-y-3 overflow-y-auto px-4 py-5 md:px-6">
+                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 md:px-6">
                   <p className="text-center text-[11px] font-medium text-white/30">Thu, Jul 30</p>
                   {active.messages.map((m) => (
                     <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 sm:max-w-[70%] ${
+                        className={`w-fit max-w-[min(88%,20rem)] rounded-2xl px-3.5 py-2.5 sm:max-w-[min(70%,26rem)] ${
                           m.mine
                             ? "rounded-br-md bg-aheers-green text-white"
                             : "rounded-bl-md bg-[#1a221e] text-white/90 ring-1 ring-white/5"
                         }`}
                       >
                         {!m.mine && active.kind === "group" && (
-                          <p className="mb-0.5 text-[10px] font-semibold text-aheers-gold">{senderLabel(m.senderId)}</p>
+                          <p className="mb-0.5 text-[10px] font-semibold text-aheers-gold">
+                            {senderLabel(m.senderId)}
+                          </p>
                         )}
-                        <p className="text-sm leading-relaxed">{m.text}</p>
-                        <p className={`mt-1 text-right text-[10px] ${m.mine ? "text-white/60" : "text-white/35"}`}>
+                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{m.text}</p>
+                        <p
+                          className={`mt-1 text-[10px] ${
+                            m.mine ? "text-right text-white/60" : "text-right text-white/35"
+                          }`}
+                        >
                           {m.at}
                         </p>
                       </div>
@@ -316,33 +421,27 @@ function TeamChatInner() {
 
                 <form
                   onSubmit={send}
-                  className="flex items-center gap-2 border-t border-white/10 px-3 py-3 md:px-4"
+                  className="flex min-w-0 shrink-0 items-center gap-1.5 border-t border-white/10 bg-[#0d1210] px-2 py-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] sm:gap-2 sm:px-4"
                 >
                   <button
                     type="button"
                     onClick={() => flash("Emoji picker (demo)")}
-                    className="rounded-full p-2 text-white/50 hover:bg-white/5 hover:text-aheers-gold"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 hover:bg-white/5 hover:text-aheers-gold"
                     aria-label="Emoji"
                   >
                     <Smile className="h-5 w-5" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => flash("Attach file (demo)")}
-                    className="rounded-full p-2 text-white/50 hover:bg-white/5 hover:text-aheers-gold"
-                    aria-label="Attach"
-                  >
-                    <Paperclip className="h-5 w-5" />
-                  </button>
                   <input
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
-                    placeholder="Type a message"
-                    className="flex-1 rounded-full border border-white/10 bg-[#0b0f0d] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-aheers-gold/40"
+                    placeholder="Type a message…"
+                    enterKeyHint="send"
+                    style={{ backgroundColor: "#0b0f0d", color: "#fff" }}
+                    className="min-h-11 min-w-0 flex-1 rounded-full border border-white/15 px-4 py-2.5 text-base text-white placeholder:text-white/35 outline-none [color-scheme:dark] focus:border-aheers-gold/40 sm:text-sm"
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-aheers-gold px-5 py-2.5 text-sm font-bold text-aheers-green-dark transition hover:bg-[#d4b03a]"
+                    className="flex min-h-11 shrink-0 items-center justify-center rounded-full bg-aheers-gold px-5 text-sm font-bold text-aheers-green-dark transition hover:bg-[#d4b03a]"
                   >
                     Send
                   </button>
@@ -353,7 +452,7 @@ function TeamChatInner() {
         </div>
 
         {toast && (
-          <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-aheers-gold px-4 py-2 text-sm font-semibold text-aheers-green-dark shadow-lift">
+          <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-aheers-gold px-4 py-2 text-sm font-semibold text-aheers-green-dark shadow-lift lg:bottom-6">
             {toast}
           </div>
         )}

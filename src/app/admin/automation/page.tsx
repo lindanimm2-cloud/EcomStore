@@ -14,9 +14,9 @@ export default function AutomationPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Automation" subtitle="Workflow automation and intelligent notifications across Aheers operations" />
-        <div className="p-8">
+        <div className="admin-page">
           <div className="mb-6 rounded-lg border border-aheers-green/20 bg-aheers-cream p-4">
             <p className="font-semibold text-aheers-green-dark">Automated workflows</p>
             <p className="mt-1 text-sm text-gray-600">

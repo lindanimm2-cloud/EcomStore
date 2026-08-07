@@ -14,9 +14,9 @@ export default function ReportsPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Reports & Analytics" subtitle="Real-time business intelligence · Aheers Group Core" />
-        <div className="p-8">
+        <div className="admin-page">
           <div className="mb-8 grid gap-4 sm:grid-cols-3">
             <div className="card p-6">
               <p className="text-sm text-gray-500">Total Demo Revenue</p>

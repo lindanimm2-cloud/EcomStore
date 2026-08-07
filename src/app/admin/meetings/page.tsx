@@ -59,31 +59,35 @@ export default function MeetingsPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="CRM — Meetings" subtitle="Calls · site visits · video · customer & lead appointments" />
-        <div className="p-6 md:p-8">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
+        <div className="admin-page">
+          <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {["all", "scheduled", "completed", "cancelled"].map((f) => (
                 <button
                   key={f}
                   type="button"
                   onClick={() => setFilter(f)}
-                  className={`capitalize ${filter === f ? "chip-active" : "chip-idle"}`}
+                  className={`shrink-0 capitalize ${filter === f ? "chip-active" : "chip-idle"}`}
                 >
                   {f}
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => setShowAdd(true)} className="btn-primary text-sm">
+            <button
+              type="button"
+              onClick={() => setShowAdd(true)}
+              className="btn-primary min-h-10 w-full text-sm sm:w-auto"
+            >
               <Plus className="h-4 w-4" /> Schedule meeting
             </button>
           </div>
 
           <div className="space-y-3">
             {list.map((m) => (
-              <div key={m.id} className="card p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+              <div key={m.id} className="card p-4 sm:p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-mono text-xs text-gray-400">{m.id}</p>
@@ -111,7 +115,7 @@ export default function MeetingsPage() {
                     </div>
                     {m.notes && <p className="mt-2 text-xs text-gray-400">{m.notes}</p>}
                   </div>
-                  <div className="w-40">
+                  <div className="w-full sm:w-40">
                     <PrettySelect
                       value={m.status}
                       onChange={(v) => setStatus(m.id, v as MeetingStatus)}
@@ -126,12 +130,12 @@ export default function MeetingsPage() {
       </div>
 
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <form onSubmit={onAdd} className="menu-panel w-full max-w-md space-y-3 p-6">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4">
+          <form onSubmit={onAdd} className="menu-panel max-h-[90dvh] w-full max-w-md space-y-3 overflow-y-auto rounded-t-3xl p-5 sm:rounded-3xl sm:p-6">
             <h3 className="font-display text-lg font-semibold">Schedule meeting</h3>
             <input name="title" required placeholder="Title" className="field" />
             <PrettySelect name="type" label="Type" defaultValue="call" options={TYPE_OPTS} />
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input name="date" required type="date" defaultValue="2026-08-05" className="field" />
               <input name="startTime" required type="time" defaultValue="10:00" className="field" />
               <input name="endTime" required type="time" defaultValue="10:30" className="field" />

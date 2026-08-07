@@ -7,9 +7,9 @@ export default function OrdersPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Orders" subtitle="All stores · Delivery, collection & in-store · Synced from e-commerce & POS" />
-        <div className="p-8">
+        <div className="admin-page">
           <DataTable
             headers={["Order ID", "Customer", "Store", "Type", "Items", "Total", "Date", "Status", "Fleet"]}
             rows={ORDERS.map((o) => [

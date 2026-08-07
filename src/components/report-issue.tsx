@@ -2,26 +2,117 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bug, X, Send } from "lucide-react";
+import { AlertTriangle, X, Send } from "lucide-react";
 import { addDevIssue, IssueSeverity } from "@/lib/dev-issues";
 import { useAuth } from "@/lib/auth-context";
 import { PrettySelect } from "@/components/pretty-select";
 
+type AppErrorDetail = { message?: string };
+
+/** Open the report modal from anywhere */
+export function openReportIssue() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("aheers:report-issue"));
+  }
+}
+
+/** Show the on-error report chip (and optionally open modal later) */
+export function reportAppError(message: string) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<AppErrorDetail>("aheers:app-error", { detail: { message } })
+  );
+}
+
+/** Compact “Report this” control for inline error messages */
+export function ReportThisButton({
+  className = "",
+  label = "Report this",
+  context,
+}: {
+  className?: string;
+  label?: string;
+  context?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (context) {
+          try {
+            sessionStorage.setItem("aheers-report-prefill", context);
+          } catch {
+            /* ignore */
+          }
+        }
+        openReportIssue();
+      }}
+      className={`inline-flex items-center gap-1.5 text-xs font-semibold underline-offset-2 hover:underline ${className}`}
+    >
+      <AlertTriangle className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+}
+
+/**
+ * Modal only — no always-on floating button.
+ * A different chip appears when an app error is reported.
+ */
 export function ReportIssueButton() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [prefill, setPrefill] = useState("");
 
   useEffect(() => {
-    const handler = () => setOpen(true);
-    window.addEventListener("aheers:report-issue", handler);
-    return () => window.removeEventListener("aheers:report-issue", handler);
-  }, []);
+    const openModal = () => {
+      setSent(false);
+      try {
+        const saved = sessionStorage.getItem("aheers-report-prefill");
+        if (saved) {
+          setPrefill(saved);
+          sessionStorage.removeItem("aheers-report-prefill");
+        }
+      } catch {
+        /* ignore */
+      }
+      setOpen(true);
+    };
+    const onAppError = (e: Event) => {
+      const detail = (e as CustomEvent<AppErrorDetail>).detail;
+      const msg = detail?.message?.trim() || "Something went wrong";
+      setErrorBanner(msg);
+      setPrefill(msg);
+    };
+    const onWindowError = (e: ErrorEvent) => {
+      setErrorBanner(e.message || "Unexpected error");
+      setPrefill(e.message || "Unexpected error");
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const reason = e.reason;
+      const msg =
+        typeof reason === "string"
+          ? reason
+          : reason?.message || "Unhandled promise error";
+      setErrorBanner(String(msg));
+      setPrefill(String(msg));
+    };
 
-  // Keep clear of admin wrench (right) and fleet badge (right)
-  const bottomClass = pathname.startsWith("/admin") ? "bottom-6 left-6" : "bottom-6 left-6";
+    window.addEventListener("aheers:report-issue", openModal);
+    window.addEventListener("aheers:app-error", onAppError as EventListener);
+    window.addEventListener("error", onWindowError);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => {
+      window.removeEventListener("aheers:report-issue", openModal);
+      window.removeEventListener("aheers:app-error", onAppError as EventListener);
+      window.removeEventListener("error", onWindowError);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
+  }, []);
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,6 +129,7 @@ export function ReportIssueButton() {
     });
     setBusy(false);
     setSent(true);
+    setErrorBanner(null);
   }
 
   const input =
@@ -45,18 +137,36 @@ export function ReportIssueButton() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => {
-          setSent(false);
-          setOpen(true);
-        }}
-        className={`fixed ${bottomClass} z-40 inline-flex items-center gap-2 rounded-full bg-aheers-charcoal px-4 py-2.5 text-sm font-semibold text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-black`}
-        aria-label="Report issue to developer"
-      >
-        <Bug className="h-4 w-4 text-aheers-gold" />
-        <span className="hidden sm:inline">Report issue</span>
-      </button>
+      {/* Only visible when an error was detected */}
+      {errorBanner && !open && (
+        <div className="fixed bottom-6 left-1/2 z-40 flex w-[min(calc(100vw-2rem),24rem)] -translate-x-1/2 items-start gap-3 rounded-2xl border border-red-200 bg-white px-3.5 py-3 shadow-lift sm:left-6 sm:translate-x-0">
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
+            <AlertTriangle className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-gray-900">Something went wrong</p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">{errorBanner}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setSent(false);
+                setOpen(true);
+              }}
+              className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-aheers-green px-3 py-1.5 text-xs font-bold text-white hover:bg-aheers-green-light"
+            >
+              Report to developer
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setErrorBanner(null)}
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            aria-label="Dismiss"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {open && (
         <div
@@ -101,7 +211,14 @@ export function ReportIssueButton() {
                 </p>
                 <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Title
-                  <input name="title" required placeholder="e.g. Cart clears when switching store" className={input} />
+                  <input
+                    name="title"
+                    required
+                    defaultValue={prefill ? prefill.slice(0, 80) : ""}
+                    placeholder="e.g. Cart clears when switching store"
+                    className={input}
+                    key={prefill || "empty"}
+                  />
                 </label>
                 <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
                   What happened?
@@ -109,15 +226,17 @@ export function ReportIssueButton() {
                     name="description"
                     required
                     rows={4}
+                    defaultValue={prefill}
                     placeholder="Steps to reproduce, expected vs actual…"
                     className={input}
+                    key={`desc-${prefill || "empty"}`}
                   />
                 </label>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <PrettySelect
                     name="severity"
                     label="Severity"
-                    defaultValue="medium"
+                    defaultValue={prefill ? "high" : "medium"}
                     options={[
                       { value: "low", label: "Low" },
                       { value: "medium", label: "Medium" },
@@ -164,11 +283,4 @@ export function ReportIssueButton() {
       )}
     </>
   );
-}
-
-/** Open the report modal from anywhere: window.dispatchEvent(new Event("aheers:report-issue")) */
-export function openReportIssue() {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("aheers:report-issue"));
-  }
 }

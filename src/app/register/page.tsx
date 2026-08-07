@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StoreSwitcher, SiteFooter } from "@/components/layout";
 import { useAuth } from "@/lib/auth-context";
+import { ReportThisButton, reportAppError } from "@/components/report-issue";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,7 +27,9 @@ export default function RegisterPage() {
     });
     setBusy(false);
     if (!res.ok) {
-      setError(res.error ?? "Registration failed");
+      const msg = res.error ?? "Registration failed";
+      setError(msg);
+      reportAppError(msg);
       return;
     }
     setDone(true);
@@ -63,7 +66,12 @@ export default function RegisterPage() {
             <input type="checkbox" required className="mt-0.5" />
             I agree to marketing preferences under POPIA and Infinity Rewards terms.
           </label>
-          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+          {error && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              <span>{error}</span>
+              <ReportThisButton context={error} className="shrink-0 text-red-800" />
+            </div>
+          )}
           <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">
             {busy ? "Creating…" : "Create account"}
           </button>

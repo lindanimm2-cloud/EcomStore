@@ -48,15 +48,15 @@ export default function CalendarPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader
           title="CRM — Calendar"
           subtitle="Meetings · task due dates · team schedule across stores"
         />
-        <div className="grid gap-6 p-6 lg:grid-cols-5 lg:p-8">
-          <div className="card lg:col-span-3 p-5">
+        <div className="admin-page grid gap-5 lg:grid-cols-5">
+          <div className="card p-4 sm:p-5 lg:col-span-3">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-xl font-semibold text-aheers-green-dark">{label}</h2>
+              <h2 className="font-display text-lg font-semibold text-aheers-green-dark sm:text-xl">{label}</h2>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -87,16 +87,17 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            <div className="mb-2 grid grid-cols-7 gap-0.5 text-center text-[10px] font-semibold uppercase tracking-wide text-gray-400 sm:gap-1 sm:text-[11px]">
               {WEEKDAYS.map((d) => (
                 <div key={d} className="py-1">
-                  {d}
+                  <span className="sm:hidden">{d.slice(0, 1)}</span>
+                  <span className="hidden sm:inline">{d}</span>
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
               {cells.map((day, i) => {
-                if (day === null) return <div key={`e-${i}`} className="min-h-[72px] rounded-xl bg-transparent" />;
+                if (day === null) return <div key={`e-${i}`} className="min-h-11 rounded-lg bg-transparent sm:min-h-[72px] sm:rounded-xl" />;
                 const key = toKey(year, month, day);
                 const mCount = meetingsOnDate(key, meetings).length;
                 const tCount = tasksDueOnDate(key, tasks).length;
@@ -107,7 +108,7 @@ export default function CalendarPage() {
                     key={key}
                     type="button"
                     onClick={() => setSelected(key)}
-                    className={`min-h-[72px] rounded-xl border p-2 text-left transition ${
+                    className={`min-h-11 rounded-lg border p-1 text-left transition sm:min-h-[72px] sm:rounded-xl sm:p-2 ${
                       isSelected
                         ? "border-aheers-green bg-aheers-green text-white shadow-soft"
                         : isToday
@@ -115,25 +116,31 @@ export default function CalendarPage() {
                           : "border-transparent bg-white hover:border-aheers-green/20 hover:bg-aheers-mist"
                     }`}
                   >
-                    <span className={`text-sm font-semibold ${isSelected ? "text-white" : "text-gray-800"}`}>{day}</span>
-                    <div className="mt-1 space-y-0.5">
+                    <span className={`text-xs font-semibold sm:text-sm ${isSelected ? "text-white" : "text-gray-800"}`}>{day}</span>
+                    <div className="mt-0.5 flex flex-wrap gap-0.5 sm:mt-1 sm:block sm:space-y-0.5">
                       {mCount > 0 && (
-                        <span
-                          className={`block truncate text-[10px] font-medium ${
-                            isSelected ? "text-white/90" : "text-aheers-green"
-                          }`}
-                        >
-                          {mCount} meet
-                        </span>
+                        <>
+                          <span className={`inline-block h-1.5 w-1.5 rounded-full sm:hidden ${isSelected ? "bg-white" : "bg-aheers-green"}`} />
+                          <span
+                            className={`hidden truncate text-[10px] font-medium sm:block ${
+                              isSelected ? "text-white/90" : "text-aheers-green"
+                            }`}
+                          >
+                            {mCount} meet
+                          </span>
+                        </>
                       )}
                       {tCount > 0 && (
-                        <span
-                          className={`block truncate text-[10px] ${
-                            isSelected ? "text-white/80" : "text-amber-700"
-                          }`}
-                        >
-                          {tCount} task
-                        </span>
+                        <>
+                          <span className={`inline-block h-1.5 w-1.5 rounded-full sm:hidden ${isSelected ? "bg-aheers-gold" : "bg-amber-500"}`} />
+                          <span
+                            className={`hidden truncate text-[10px] font-medium sm:block ${
+                              isSelected ? "text-white/80" : "text-amber-700"
+                            }`}
+                          >
+                            {tCount} task
+                          </span>
+                        </>
                       )}
                     </div>
                   </button>

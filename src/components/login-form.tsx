@@ -4,6 +4,7 @@ import { FormEvent, useState, ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth, UserRole, DEMO_USERS } from "@/lib/auth-context";
+import { ReportThisButton, reportAppError } from "@/components/report-issue";
 
 const ROLE_HOME: Record<UserRole, string> = {
   customer: "/portal",
@@ -138,7 +139,9 @@ export function LoginForm({
       if (mode === "otp") {
         const res = await loginOtp(phone, otp, allowedRoles);
         if (!res.ok) {
-          setError(res.error ?? "OTP failed");
+          const msg = res.error ?? "OTP failed";
+          setError(msg);
+          reportAppError(msg);
           return;
         }
         const role = res.user?.role ?? "customer";
@@ -147,7 +150,9 @@ export function LoginForm({
       }
       const res = await login(email, password, allowedRoles);
       if (!res.ok || !res.user) {
-        setError(res.error ?? "Login failed");
+        const msg = res.error ?? "Login failed";
+        setError(msg);
+        reportAppError(msg);
         return;
       }
       router.push(ROLE_HOME[res.user.role]);
@@ -211,7 +216,19 @@ export function LoginForm({
           </>
         )}
 
-        {error && <p className={theme.error}>{error}</p>}
+        {error && (
+          <div className={`${theme.error} flex flex-wrap items-center justify-between gap-2`}>
+            <span>{error}</span>
+            <ReportThisButton
+              context={error}
+              className={
+                variant === "customer" || variant === "trade"
+                  ? "text-red-800 shrink-0"
+                  : "text-red-200 shrink-0"
+              }
+            />
+          </div>
+        )}
 
         <button type="submit" disabled={busy} className={theme.button}>
           {busy ? "Signing in…" : variant === "staff" ? "Access operations" : variant === "driver" ? "Start shift" : variant === "trade" ? "Enter trade portal" : "Sign in"}

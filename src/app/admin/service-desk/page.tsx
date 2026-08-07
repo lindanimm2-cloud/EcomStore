@@ -10,12 +10,12 @@ export default function ServiceDeskPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader
           title="Service Counter Portal"
           subtitle="Phone & WhatsApp orders · Rewards lookup · EFT confirmation · Delivery scheduling"
         />
-        <div className="p-8">
+        <div className="admin-page">
           <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4">
             <p className="font-semibold text-purple-900">Why this matters for Aheers</p>
             <p className="mt-1 text-sm text-purple-800">

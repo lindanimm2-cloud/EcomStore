@@ -27,9 +27,9 @@ export default function DriversSettingsPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-[#f4f5f7]">
+      <div className="admin-main bg-[#f4f5f7]">
         <AdminHeader title="Drivers" subtitle="Assign drivers to vehicles · Fleet Hub & PowerTrade" />
-        <div className="p-6 md:p-8">
+        <div className="admin-page">
           <div className="overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/5">
             <table className="w-full text-sm">
               <thead>

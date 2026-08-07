@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
   Users,
   Package,
@@ -22,14 +23,34 @@ const STAT_ICONS = {
 
 export type StatIconName = keyof typeof STAT_ICONS;
 
-export function AdminHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+export function AdminHeader({
+  title,
+  subtitle,
+  actions,
+}: {
+  title: string;
+  subtitle?: string;
+  actions?: ReactNode;
+}) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-200 bg-white px-6 py-5 md:px-8 md:py-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-gray-900">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+    <div className="border-b border-gray-100 bg-white px-4 py-4 md:px-8 md:py-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-[1.35rem] font-semibold tracking-tight text-aheers-green-dark md:text-2xl">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-gray-500 md:line-clamp-none md:text-sm">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
+          {actions}
+          <NotificationsBell audience="staff" variant="admin" fullPageHref="/admin/notifications" />
+        </div>
       </div>
-      <NotificationsBell audience="staff" variant="admin" fullPageHref="/admin/notifications" />
+      {actions && <div className="mt-3 flex flex-wrap gap-2 lg:hidden">{actions}</div>}
     </div>
   );
 }
@@ -55,14 +76,14 @@ export function StatCard({
     purple: "bg-purple-50 text-purple-700",
   };
   return (
-    <div className="card p-5">
+    <div className="mobile-stat sm:card sm:rounded-2xl sm:p-5 sm:shadow-soft">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
-          {change && <p className="mt-1 text-xs text-green-600">{change}</p>}
+          <p className="text-xs font-medium text-gray-500 sm:text-sm">{label}</p>
+          <p className="mt-1.5 text-2xl font-bold tracking-tight text-aheers-charcoal">{value}</p>
+          {change && <p className="mt-1.5 text-xs font-semibold text-aheers-green">{change}</p>}
         </div>
-        <div className={`rounded-lg p-2.5 ${colors[color]}`}>
+        <div className={`rounded-2xl p-2.5 ${colors[color]}`}>
           <Icon className="h-5 w-5" />
         </div>
       </div>

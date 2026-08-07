@@ -20,16 +20,16 @@ function TicketsInner() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="CRM — Support tickets" subtitle="Update status · Assign · Resolve" />
-        <div className="p-8">
-          <div className="mb-4 flex flex-wrap gap-2">
+        <div className="admin-page">
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
             {["all", "open", "pending", "resolved"].map((f) => (
               <button
                 key={f}
                 type="button"
                 onClick={() => setFilter(f)}
-                className={`capitalize ${filter === f ? "chip-active" : "chip-idle"}`}
+                className={`shrink-0 capitalize ${filter === f ? "chip-active" : "chip-idle"}`}
               >
                 {f}
               </button>
@@ -37,9 +37,9 @@ function TicketsInner() {
           </div>
           <div className="space-y-3">
             {list.map((t) => (
-              <div key={t.id} className="card p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
+              <div key={t.id} className="card p-4 sm:p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                  <div className="min-w-0">
                     <p className="font-mono text-xs text-gray-400">{t.id}</p>
                     <h3 className="font-semibold text-gray-900">{t.subject}</h3>
                     <p className="text-sm text-gray-500">
@@ -47,10 +47,11 @@ function TicketsInner() {
                     </p>
                     <p className="mt-1 text-xs text-gray-400">Assignee: {t.assignee}</p>
                   </div>
-                  <div className="flex w-36 flex-col items-end gap-2">
+                  <div className="flex w-full flex-row flex-wrap items-center gap-2 sm:w-40 sm:flex-col sm:items-end">
                     <StatusBadge status={t.status} />
                     <StatusBadge status={t.priority} />
                     <PrettySelect
+                      className="w-full sm:w-auto"
                       value={t.status}
                       onChange={(v) => setStatus(t.id, v as "open" | "pending" | "resolved")}
                       options={[

@@ -81,7 +81,7 @@ export default function UsersPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Users & access" subtitle="Staff directory · Invite · Assign roles · Disable accounts" />
         {toast && (
           <div className="mx-8 mt-4 rounded-xl border border-aheers-green/20 bg-aheers-green/10 px-4 py-2 text-sm text-aheers-green">

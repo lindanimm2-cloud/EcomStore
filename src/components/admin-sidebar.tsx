@@ -34,6 +34,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { NotificationsBell } from "@/components/notifications-bell";
 import { useEffect, useState } from "react";
 
 type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
@@ -102,9 +103,15 @@ function SidebarBody({
   const router = useRouter();
   const { user, logout } = useAuth();
 
+  function isActive(href: string) {
+    if (href === "/admin") return pathname === "/admin";
+    if (href === "/admin/settings") return pathname === "/admin/settings";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
   return (
-    <>
-      <div className={`border-b border-white/10 ${compact ? "p-3" : "p-5"}`}>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className={`shrink-0 border-b border-white/10 ${compact ? "p-3" : "p-5"}`}>
         <Link href="/admin" className="block" onClick={onNavigate}>
           <p className="text-xs font-medium uppercase tracking-wider text-aheers-gold">Aheers Group</p>
           <h2 className="font-display text-lg font-semibold">Operations Hub</h2>
@@ -117,7 +124,7 @@ function SidebarBody({
           </p>
         )}
       </div>
-      <nav className={`flex-1 overflow-y-auto p-3 ${compact ? "space-y-2" : "space-y-4"}`}>
+      <nav className={`min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 ${compact ? "space-y-2" : "space-y-4"}`}>
         {NAV_GROUPS.map((group) => (
           <div key={group.title}>
             <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-white/35">
@@ -125,17 +132,13 @@ function SidebarBody({
             </p>
             <div className={compact ? "space-y-0" : "space-y-0.5"}>
               {group.items.map(({ href, label, icon: Icon }) => {
-                const active =
-                  href === "/admin"
-                    ? pathname === "/admin"
-                    : href === "/admin/settings"
-                      ? pathname === "/admin/settings"
-                      : pathname === href || pathname.startsWith(`${href}/`);
+                const active = isActive(href);
                 return (
                   <Link
                     key={href}
                     href={href}
                     onClick={onNavigate}
+                    aria-current={active ? "page" : undefined}
                     className={`admin-sidebar-link ${compact ? "!py-1.5" : ""} ${active ? "admin-sidebar-link-active" : ""}`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
@@ -147,7 +150,7 @@ function SidebarBody({
           </div>
         ))}
       </nav>
-      <div className="border-t border-white/10 p-4">
+      <div className="shrink-0 border-t border-white/10 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={() => {
@@ -167,7 +170,7 @@ function SidebarBody({
           CRM · ERP · Demo
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -182,6 +185,14 @@ export function AdminSidebar() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    function openMenu() {
+      setMobileOpen(true);
+    }
+    window.addEventListener("aheers:open-admin-menu", openMenu);
+    return () => window.removeEventListener("aheers:open-admin-menu", openMenu);
+  }, []);
 
   useEffect(() => {
     try {
@@ -212,19 +223,22 @@ export function AdminSidebar() {
 
   const mobileChrome = (
     <>
-      <div className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between border-b border-aheers-green/20 bg-aheers-green-dark px-4 py-3 text-white lg:hidden">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-aheers-gold">Aheers Ops</p>
-          <p className="font-display text-sm font-semibold">Operations Hub</p>
-        </div>
+      <div className="fixed left-0 right-0 top-0 z-40 flex items-center gap-3 border-b border-gray-200/80 bg-white/95 px-3 py-2.5 text-aheers-charcoal shadow-[0_4px_20px_rgba(13,61,38,0.04)] backdrop-blur-xl lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="rounded-xl bg-white/10 p-2.5 hover:bg-white/15"
+          className="shrink-0 rounded-2xl bg-aheers-mist p-2.5 text-aheers-green-dark transition hover:bg-aheers-green/10"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green">Aheers Ops</p>
+          <p className="truncate font-display text-sm font-semibold leading-tight text-aheers-green-dark">
+            Operations Hub
+          </p>
+        </div>
+        <NotificationsBell audience="staff" variant="admin" fullPageHref="/admin/notifications" />
       </div>
 
       {mobileOpen && (
@@ -235,8 +249,12 @@ export function AdminSidebar() {
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(88vw,18rem)] flex-col bg-aheers-green-dark text-white shadow-lift">
-            <div className="flex items-center justify-end p-2">
+          <aside className="absolute left-0 top-0 flex h-dvh max-h-dvh w-[min(88vw,18rem)] flex-col bg-aheers-green-dark text-white shadow-lift">
+            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-3 py-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-aheers-gold">Menu</p>
+                <p className="truncate font-display text-sm font-semibold">Operations Hub</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
@@ -257,7 +275,7 @@ export function AdminSidebar() {
     <>
       {mounted && createPortal(mobileChrome, document.body)}
       <aside
-        className={`hidden shrink-0 flex-col bg-aheers-green-dark text-white transition-all lg:flex ${
+        className={`sticky top-0 hidden h-dvh shrink-0 flex-col bg-aheers-green-dark text-white transition-all lg:flex ${
           compact ? "w-52" : "w-64"
         }`}
       >

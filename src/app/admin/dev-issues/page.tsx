@@ -28,12 +28,12 @@ export default function DevIssuesPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-[#f4f5f7]">
+      <div className="admin-main bg-[#f4f5f7]">
         <AdminHeader
           title="Dev issues"
           subtitle="Reports sent via “Report issue to developer” — inbox for this demo browser"
         />
-        <div className="p-6 md:p-8">
+        <div className="admin-page">
           <div className="mb-5 flex flex-wrap items-center gap-2">
             {(["all", "open", "in_progress", "resolved"] as const).map((f) => (
               <button
@@ -57,7 +57,7 @@ export default function DevIssuesPage() {
               <Bug className="mx-auto mb-3 h-10 w-10 text-gray-300" />
               <p className="font-semibold text-gray-800">No issues yet</p>
               <p className="mt-1 text-sm text-gray-500">
-                Use the black “Report issue” button (bottom-left) anywhere on the site.
+                Reports appear here when someone uses <strong>Report this</strong> on an error message, or the footer link.
               </p>
             </div>
           ) : (

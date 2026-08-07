@@ -15,7 +15,7 @@ export default function AuditPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="Audit log" subtitle="Immutable trail of sensitive CRM, inventory and settings actions" />
         <div className="p-6">
           <div className="mb-4 flex items-center gap-3">

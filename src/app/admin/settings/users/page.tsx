@@ -45,7 +45,7 @@ export default function SettingsUsersPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-[#f4f5f7]">
+      <div className="admin-main bg-[#f4f5f7]">
         <div className="border-b border-gray-200/80 bg-white px-8 py-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -63,7 +63,7 @@ export default function SettingsUsersPage() {
           </div>
         </div>
 
-        <div className="p-6 md:p-8">
+        <div className="admin-page">
           <div className="overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/5">
             <table className="w-full text-sm">
               <thead>

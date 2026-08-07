@@ -30,7 +30,7 @@ export default function SegmentsPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="CRM — Segments" subtitle="Audience lists for campaigns, WhatsApp and specials" />
         <div className="p-6">
           <div className="card mb-6 grid gap-3 p-5 sm:grid-cols-3">

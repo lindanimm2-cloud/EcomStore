@@ -49,40 +49,40 @@ function CustomersCrmInner() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader
           title="CRM — Customers"
           subtitle={`Signed in as ${user?.name} (${user?.title})`}
         />
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-8 py-2 text-xs text-gray-500">
-          <span>Live CRM workspace · search, 360 view, notes</span>
+        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 text-xs text-gray-500 md:px-8">
+          <span className="truncate">Live CRM workspace · search, 360 view, notes</span>
           <button
             type="button"
             onClick={() => {
               logout();
               window.location.href = "/login/staff";
             }}
-            className="text-aheers-green hover:underline"
+            className="shrink-0 text-aheers-green hover:underline"
           >
             Sign out
           </button>
         </div>
-        <div className="grid gap-6 p-6 lg:grid-cols-5">
+        <div className="admin-page grid gap-5 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <div className="mb-3 flex gap-2">
-              <div className="relative flex-1">
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+              <div className="relative min-w-0 flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search name, phone, card…"
-                  className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm"
+                  className="w-full rounded-lg border border-gray-200 py-2.5 pl-9 pr-3 text-sm"
                 />
               </div>
               <PrettySelect
                 value={typeFilter}
                 onChange={setTypeFilter}
-                className="w-36"
+                className="w-full sm:w-36"
                 options={[
                   { value: "all", label: "All types" },
                   { value: "retail", label: "Retail" },
@@ -91,7 +91,7 @@ function CustomersCrmInner() {
                 ]}
               />
             </div>
-            <div className="card max-h-[70vh] overflow-y-auto divide-y divide-gray-100">
+            <div className="card max-h-[50vh] divide-y divide-gray-100 overflow-y-auto lg:max-h-[70vh]">
               {filtered.map((c) => (
                 <button
                   key={c.id}

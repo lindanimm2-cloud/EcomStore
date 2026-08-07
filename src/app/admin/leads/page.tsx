@@ -19,12 +19,13 @@ function LeadsInner() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-gray-50">
+      <div className="admin-main">
         <AdminHeader title="CRM — Sales pipeline" subtitle="Leads · Opportunities · Hardware & PowerTrade" />
-        <div className="overflow-x-auto p-6">
-          <div className="flex min-w-[900px] gap-4">
+        <div className="admin-page">
+          <p className="mb-3 text-center text-[11px] text-gray-400 md:hidden">Swipe sideways for more pipeline stages</p>
+          <div className="admin-board-scroll">
             {stages.map((stage) => (
-              <div key={stage} className="w-56 shrink-0">
+              <div key={stage} className="admin-board-col">
                 <h3 className="mb-3 text-sm font-semibold capitalize text-gray-700">{stage}</h3>
                 <div className="space-y-2">
                   {leads

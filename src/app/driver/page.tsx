@@ -26,7 +26,6 @@ import {
   Clock,
   ExternalLink,
   Crosshair,
-  Package,
   Flag,
   ListOrdered,
   Menu,
@@ -260,31 +259,33 @@ export default function DriverPortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-aheers-mist">
-      {/* Side drawer */}
+    <div className="min-h-dvh bg-[#f7f8f9] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
+      {/* Side drawer — secondary actions */}
       {menuOpen && (
         <div className="fixed inset-0 z-50">
-          <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={() => setMenuOpen(false)} />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(88vw,17rem)] flex-col bg-[#0d1512] text-white shadow-lift">
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+          <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close" onClick={() => setMenuOpen(false)} />
+          <aside className="absolute left-0 top-0 flex h-full w-[min(88vw,17rem)] flex-col bg-white shadow-lift">
+            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-aheers-gold">Aheers Driver</p>
-                <p className="font-display text-sm font-semibold">{user?.name?.split(" ")[0] ?? "Driver"}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green">Aheers Driver</p>
+                <p className="font-display text-sm font-semibold text-aheers-green-dark">
+                  {user?.name?.split(" ")[0] ?? "Driver"}
+                </p>
               </div>
-              <button type="button" onClick={() => setMenuOpen(false)} className="rounded-lg p-2 hover:bg-white/10" aria-label="Close">
+              <button type="button" onClick={() => setMenuOpen(false)} className="rounded-xl p-2 text-gray-500 hover:bg-gray-100" aria-label="Close">
                 <X className="h-4 w-4" />
               </button>
             </div>
             <nav className="flex-1 space-y-0.5 p-3">
               {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
-                const active = view === id || (id === "queue" && view === "queue");
+                const active = view === id;
                 return (
                   <button
                     key={id}
                     type="button"
                     onClick={() => go(id)}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${
-                      active ? "bg-aheers-green text-white" : "text-white/75 hover:bg-white/5 hover:text-white"
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm transition ${
+                      active ? "bg-aheers-green/10 font-semibold text-aheers-green-dark" : "text-gray-600 hover:bg-gray-50"
                     }`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
@@ -298,14 +299,14 @@ export default function DriverPortalPage() {
                 );
               })}
             </nav>
-            <div className="border-t border-white/10 p-4">
+            <div className="border-t border-gray-100 p-4">
               <button
                 type="button"
                 onClick={() => {
                   logout();
                   router.push("/login/driver");
                 }}
-                className="flex w-full items-center gap-2 text-xs text-white/50 hover:text-white"
+                className="flex w-full items-center gap-2 text-xs text-gray-500 hover:text-aheers-green-dark"
               >
                 <LogOut className="h-3.5 w-3.5" /> Sign out
               </button>
@@ -314,38 +315,45 @@ export default function DriverPortalPage() {
         </div>
       )}
 
-      <header className="bg-aheers-green-dark px-4 py-4 text-white">
+      <header className="border-b border-gray-100 bg-white px-4 pb-4 pt-3">
         <div className="mx-auto max-w-lg">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <button type="button" onClick={() => setMenuOpen(true)} className="rounded-xl bg-white/10 p-2.5 hover:bg-white/15" aria-label="Menu">
+          <div className="mb-3 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              className="rounded-2xl bg-aheers-mist p-2.5 text-aheers-green-dark"
+              aria-label="Menu"
+            >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="min-w-0 flex-1 text-center sm:text-left">
-              <p className="truncate font-display text-lg font-semibold">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green">Aheers Driver</p>
+              <p className="truncate font-display text-lg font-semibold text-aheers-green-dark">
                 Hello, {user?.name?.split(" ")[0] ?? DRIVER_VEHICLE.driver.split(" ")[0]}
               </p>
-              <p className="text-xs text-white/55">Fleet Hub · Greytown</p>
             </div>
             <span
               className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
                 status === "idle"
-                  ? "bg-aheers-green/40 text-aheers-gold"
+                  ? "bg-aheers-green/10 text-aheers-green"
                   : status === "delivering"
-                    ? "bg-amber-400/90 text-aheers-green-dark"
-                    : "bg-white/15 text-white"
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-gray-100 text-gray-600"
               }`}
             >
               {sceneLabel}
             </span>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+          <div className="rounded-[1.35rem] border border-gray-100 bg-[#f7f8f9] p-3.5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-aheers-gold" />
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-aheers-green shadow-sm">
+                  <Clock className="h-4 w-4" />
+                </span>
                 <div>
-                  <p className="text-sm font-semibold">Shift · Wed 5 Aug</p>
-                  <p className="text-xs text-white/55">06:00 – 15:00 · {DRIVER_VEHICLE.name}</p>
+                  <p className="text-sm font-semibold text-aheers-charcoal">Shift · Wed 5 Aug</p>
+                  <p className="text-xs text-gray-500">06:00 – 15:00 · {DRIVER_VEHICLE.name}</p>
                 </div>
               </div>
               <button
@@ -354,8 +362,8 @@ export default function DriverPortalPage() {
                   setShiftOn((v) => !v);
                   flash(shiftOn ? "Shift paused" : "On shift");
                 }}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${
-                  shiftOn ? "bg-aheers-gold text-aheers-green-dark" : "bg-white/15 text-white"
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold ${
+                  shiftOn ? "bg-aheers-green text-white" : "bg-white text-gray-600 ring-1 ring-gray-200"
                 }`}
               >
                 {shiftOn ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -366,17 +374,17 @@ export default function DriverPortalPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-4 px-4 py-5 pb-12">
+      <main className="mx-auto max-w-lg space-y-4 px-4 py-5">
         {view === "dashboard" && (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <div className="card p-4">
-                <p className="text-xs text-gray-500">Active jobs</p>
-                <p className="mt-1 text-3xl font-bold text-aheers-charcoal">{openCount}</p>
+              <div className="mobile-stat">
+                <p className="text-xs font-medium text-gray-500">Active jobs</p>
+                <p className="mt-1.5 text-3xl font-bold tracking-tight text-aheers-charcoal">{openCount}</p>
               </div>
-              <div className="rounded-2xl border border-aheers-green/20 bg-aheers-green/5 p-4">
-                <p className="text-xs text-aheers-green">Completed today</p>
-                <p className="mt-1 text-3xl font-bold text-aheers-green-dark">{deliveredJobs.length}</p>
+              <div className="mobile-stat border-aheers-green/15 bg-aheers-green/[0.04]">
+                <p className="text-xs font-medium text-aheers-green">Completed today</p>
+                <p className="mt-1.5 text-3xl font-bold tracking-tight text-aheers-green-dark">{deliveredJobs.length}</p>
               </div>
             </div>
 
@@ -389,65 +397,71 @@ export default function DriverPortalPage() {
                 </button>
               </div>
             ) : (
-              <div className="card p-4">
-                <div className="mb-3 flex items-start justify-between gap-2">
-                  <h2 className="font-semibold text-gray-900">Current delivery</h2>
-                  <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-800">
-                    {sceneLabel}
-                  </span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-aheers-red" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{activeJob.address}</p>
-                    <p className="mt-0.5 text-sm text-gray-500">
-                      {activeJob.orderId} · {activeJob.customerName}
-                    </p>
-                    {activeJob.note && <p className="mt-1 text-xs italic text-gray-400">{activeJob.note}</p>}
-                    {activeJob.requestedBy === "customer" && (
-                      <span className="mt-1 inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-800">
-                        Customer request
-                      </span>
-                    )}
+              <div className="mobile-stat !p-0 overflow-hidden">
+                <div className="border-b border-gray-100 px-4 py-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green">
+                        Current delivery
+                      </p>
+                      <h2 className="mt-0.5 font-display text-lg font-semibold text-aheers-green-dark">
+                        {activeJob.customerName}
+                      </h2>
+                    </div>
+                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-800">
+                      {sceneLabel}
+                    </span>
                   </div>
-                </div>
-                <div className="mt-3 rounded-xl bg-aheers-mist/80 p-3">
-                  <p className="inline-flex items-center gap-2 text-sm font-semibold text-aheers-green-dark">
-                    <Package className="h-4 w-4" />
-                    Ordered · {activeJob.units} units
+                  <p className="mt-2 flex items-start gap-1.5 text-sm text-gray-600">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-aheers-green" />
+                    {activeJob.address}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-400">
+                    {activeJob.orderId} · {activeJob.units} units
                     {activeJob.total > 0 ? ` · ${formatCurrency(activeJob.total)}` : ""}
                   </p>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <a href={navigateHref} target="_blank" rel="noreferrer" className="btn-primary text-sm">
+                <div className="grid grid-cols-2 gap-2 p-3">
+                  <a
+                    href={navigateHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-primary min-h-12 text-sm"
+                  >
                     <Navigation className="h-4 w-4" /> Navigate
                   </a>
-                  <button type="button" onClick={() => flash("POD camera (demo)")} className="btn-secondary text-sm">
-                    <Camera className="h-4 w-4" /> POD Photo
+                  <button
+                    type="button"
+                    onClick={() => openDeliverNote(activeJob.id)}
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-aheers-gold px-3 text-sm font-bold text-aheers-green-dark"
+                  >
+                    <CheckCircle className="h-4 w-4" /> Delivered
                   </button>
                 </div>
-                <a
-                  href={mapsUrl(activeJob.address)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-aheers-green/20 bg-white px-3 py-2.5 text-sm font-semibold text-aheers-green-dark hover:bg-aheers-mist"
-                >
-                  <ExternalLink className="h-4 w-4" /> Show address on map
-                </a>
-                <button
-                  type="button"
-                  onClick={() => openDeliverNote(activeJob.id)}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-aheers-green px-3 py-3 text-sm font-bold text-white hover:bg-aheers-green-light"
-                >
-                  <CheckCircle className="h-4 w-4" /> Mark delivered + note
-                </button>
-                <button
-                  type="button"
-                  onClick={finishTrip}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-aheers-green-dark px-3 py-2.5 text-sm font-semibold text-white"
-                >
-                  <Flag className="h-4 w-4" /> Finish trip
-                </button>
+                <div className="flex gap-2 border-t border-gray-100 px-3 py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => flash("POD camera (demo)")}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#f7f8f9] py-2.5 text-xs font-semibold text-gray-600"
+                  >
+                    <Camera className="h-3.5 w-3.5" /> POD
+                  </button>
+                  <a
+                    href={mapsUrl(activeJob.address)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#f7f8f9] py-2.5 text-xs font-semibold text-gray-600"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Map
+                  </a>
+                  <button
+                    type="button"
+                    onClick={finishTrip}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#f7f8f9] py-2.5 text-xs font-semibold text-gray-600"
+                  >
+                    <Flag className="h-3.5 w-3.5" /> Finish
+                  </button>
+                </div>
               </div>
             )}
 
@@ -688,10 +702,60 @@ export default function DriverPortalPage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-aheers-green-dark px-4 py-2 text-sm font-medium text-white shadow-lift">
+        <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-aheers-green-dark px-4 py-2 text-sm font-medium text-white shadow-lift">
           {toast}
         </div>
       )}
+
+      {/* Clean bottom tabs */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_40px_rgba(13,61,38,0.07)]">
+        <ul className="mx-auto flex max-w-lg items-stretch justify-between px-2 pt-1">
+          {(
+            [
+              { id: "dashboard" as const, label: "Home", icon: LayoutDashboard },
+              { id: "queue" as const, label: "Queue", icon: ListOrdered, badge: newJobs.length },
+              { id: "nav" as const, label: "Navigate", icon: Navigation },
+              { id: "profile" as const, label: "Account", icon: User },
+            ] as const
+          ).map((tab) => {
+            const Icon = tab.icon;
+            const active = tab.id === "nav" ? false : view === tab.id;
+            return (
+              <li key={tab.id} className="flex-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (tab.id === "nav") {
+                      window.open(navigateHref, "_blank");
+                      return;
+                    }
+                    setView(tab.id);
+                  }}
+                  className={`relative flex min-h-[3.4rem] w-full flex-col items-center justify-center gap-0.5 rounded-2xl px-1 transition ${
+                    active ? "text-aheers-green" : "text-gray-400"
+                  }`}
+                >
+                  <span
+                    className={`flex h-9 w-9 items-center justify-center rounded-2xl transition ${
+                      active ? "bg-aheers-green text-white shadow-soft" : ""
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.85} />
+                  </span>
+                  <span className={`text-[10px] font-semibold ${active ? "text-aheers-green-dark" : ""}`}>
+                    {tab.label}
+                  </span>
+                  {"badge" in tab && tab.badge > 0 && (
+                    <span className="absolute right-3 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-aheers-gold px-1 text-[9px] font-bold text-aheers-green-dark">
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </div>
   );
 }

@@ -60,9 +60,9 @@ export default function VehiclesSettingsPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-[#f4f5f7]">
+      <div className="admin-main bg-[#f4f5f7]">
         <AdminHeader title="Vehicles" subtitle="Add vehicles, set capacity, and assign drivers" />
-        <div className="p-6 md:p-8">
+        <div className="admin-page">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-gray-500">{vehicles.length} vehicles in fleet</p>
             <button type="button" onClick={() => setShowAdd(true)} className="inline-flex items-center gap-2 rounded-xl bg-aheers-green-dark px-4 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-aheers-green">

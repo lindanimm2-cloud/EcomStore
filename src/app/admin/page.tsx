@@ -24,6 +24,8 @@ import {
   Clock,
   ArrowRight,
   Truck,
+  Search,
+  ShoppingBag,
 } from "lucide-react";
 
 const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
@@ -47,6 +49,7 @@ function monthMatrix(year: number, month: number) {
 export default function AdminDashboard() {
   const [cursor, setCursor] = useState(() => new Date(2026, 7, 1));
   const [selected, setSelected] = useState(TODAY);
+  const [q, setQ] = useState("");
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
@@ -59,19 +62,36 @@ export default function AdminDashboard() {
   const openTasks = CRM_TASKS.filter((t) => t.status !== "done").slice(0, 5);
   const activeOrders = ORDERS.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
   const activeFleet = FLEET_VEHICLES.filter((v) => v.status !== "idle");
+  const targetPct = Math.min(100, Math.round((activeOrders.length / Math.max(ORDERS.length, 1)) * 100) || 82);
 
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 bg-aheers-mist">
+      <div className="admin-main bg-aheers-mist">
         <AdminHeader
-          title="Operations Dashboard"
-          subtitle="Aheers Group · Real-time overview across all stores"
+          title="Overview"
+          subtitle="Aheers Group · live ops across all stores"
         />
 
-        <div className="space-y-6 p-5 md:p-8">
-          {/* KPI row */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="admin-page space-y-5">
+          {/* Mobile search — ADOL-style */}
+          <div className="relative lg:hidden">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search customers, orders, tasks…"
+              className="mobile-search"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && q.trim()) {
+                  window.location.href = `/admin/customers`;
+                }
+              }}
+            />
+          </div>
+
+          {/* KPI grid */}
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
             <StatCard label="Active Customers" value={String(CUSTOMERS.length)} change="+2 this week" icon="users" color="blue" />
             <StatCard
               label="Orders Today"
@@ -80,7 +100,7 @@ export default function AdminDashboard() {
               icon="shoppingBag"
               color="green"
             />
-            <StatCard label="Products Listed" value={String(PRODUCTS.length)} icon="package" color="purple" />
+            <StatCard label="Products Listed" value={String(PRODUCTS.length)} change="In catalogue" icon="package" color="purple" />
             <StatCard
               label="Fleet Active"
               value={`${activeFleet.length}/${FLEET_VEHICLES.length}`}
@@ -90,6 +110,104 @@ export default function AdminDashboard() {
             />
           </div>
 
+          {/* Target progress — mobile-first clean card */}
+          <section className="mobile-stat flex items-center gap-4 p-5 xl:hidden">
+            <div
+              className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
+              style={{
+                background: `conic-gradient(#1B5E3B ${targetPct}%, #e8ece9 0)`,
+              }}
+            >
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-sm font-bold text-aheers-green-dark">
+                {targetPct}%
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green">Target orders</p>
+              <p className="mt-1 text-sm font-semibold leading-snug text-aheers-charcoal">
+                You completed <span className="text-aheers-green">{targetPct}%</span> of open order flow this week.
+              </p>
+              <Link href="/admin/orders" className="mt-2 inline-flex text-xs font-bold text-aheers-green">
+                View orders →
+              </Link>
+            </div>
+          </section>
+
+          {/* Quick launch — mobile */}
+          <section className="xl:hidden">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Shortcuts</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { name: "Team chat", href: "/admin/chat", icon: MessageCircle },
+                { name: "Calendar", href: "/admin/calendar", icon: CalendarDays },
+                { name: "Meetings", href: "/admin/meetings", icon: Video },
+                { name: "Tasks", href: "/admin/tasks", icon: CheckSquare },
+              ].map(({ name, href, icon: Icon }) => (
+                <Link
+                  key={name}
+                  href={href}
+                  className="flex items-center gap-3 rounded-[1.25rem] border border-gray-100 bg-white p-3.5 shadow-[0_8px_24px_rgba(13,61,38,0.04)] active:scale-[0.98]"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-aheers-green/10 text-aheers-green">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-sm font-semibold text-aheers-charcoal">{name}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Mobile: open tasks list */}
+          <section className="mobile-stat xl:hidden">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Open tasks</h2>
+              <Link href="/admin/tasks" className="text-xs font-bold text-aheers-green">
+                Board
+              </Link>
+            </div>
+            <ul className="space-y-2">
+              {openTasks.slice(0, 4).map((t) => (
+                <li key={t.id} className="flex items-center justify-between gap-2 rounded-2xl bg-[#f7f8f9] px-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-gray-900">{t.title}</p>
+                    <p className="text-xs text-gray-400">Due {t.dueDate}</p>
+                  </div>
+                  <StatusBadge status={t.status} />
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Mobile: recent orders as cards */}
+          <section className="xl:hidden">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Recent orders</h2>
+              <Link href="/admin/orders" className="text-xs font-bold text-aheers-green">
+                View all
+              </Link>
+            </div>
+            <ul className="space-y-2.5">
+              {ORDERS.slice(0, 5).map((o) => (
+                <li key={o.id} className="mobile-stat flex items-center gap-3 !p-3.5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-aheers-mist text-aheers-green">
+                    <ShoppingBag className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-gray-900">{o.customerName}</p>
+                    <p className="text-xs text-gray-400">
+                      {o.id} · {formatCurrency(o.total)}
+                    </p>
+                  </div>
+                  <StatusBadge status={o.status} />
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Desktop / tablet: existing rich layout */}
+          <div className="hidden space-y-6 xl:block">
           {/* Calendar + agenda + tasks */}
           <div className="grid gap-5 xl:grid-cols-12">
             {/* Mini calendar */}
@@ -374,6 +492,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           </section>
+          </div>
         </div>
       </div>
     </div>

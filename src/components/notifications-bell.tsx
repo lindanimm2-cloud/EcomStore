@@ -27,7 +27,7 @@ export function NotificationsBell({
   fullPageHref,
 }: {
   audience?: NotificationAudience | "any";
-  variant?: "light" | "dark" | "admin";
+  variant?: "light" | "dark" | "admin" | "ops";
   fullPageHref?: string;
 }) {
   const { listFor, unreadCount, markRead, markAllRead } = useNotifications();
@@ -36,19 +36,29 @@ export function NotificationsBell({
   const unread = unreadCount(audience);
 
   const btn =
-    variant === "dark"
-      ? "inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20"
-      : variant === "admin"
-        ? "inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-        : "inline-flex items-center gap-2 rounded-full border border-aheers-green/15 bg-white px-3 py-1.5 text-sm font-medium text-aheers-charcoal shadow-soft transition hover:border-aheers-green/30";
+    variant === "ops"
+      ? "relative inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white transition hover:bg-white/15"
+      : variant === "dark"
+        ? "inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20"
+        : variant === "admin"
+          ? "relative inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50"
+          : "inline-flex items-center gap-2 rounded-full border border-aheers-green/15 bg-white px-3 py-1.5 text-sm font-medium text-aheers-charcoal shadow-soft transition hover:border-aheers-green/30";
 
   return (
     <div className="relative">
       <button type="button" onClick={() => setOpen(!open)} className={btn} aria-label="Notifications">
         <Bell className="h-4 w-4" />
-        <span className="hidden sm:inline">{unread > 0 ? `${unread} unread` : "Alerts"}</span>
+        {variant !== "ops" && variant !== "admin" && (
+          <span className="hidden sm:inline">{unread > 0 ? `${unread} unread` : "Alerts"}</span>
+        )}
         {unread > 0 && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark sm:hidden">
+          <span
+            className={
+              variant === "ops" || variant === "admin"
+                ? "absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark"
+                : "flex h-5 min-w-5 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark sm:hidden"
+            }
+          >
             {unread}
           </span>
         )}
@@ -56,8 +66,8 @@ export function NotificationsBell({
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="menu-panel absolute right-0 top-full z-50 mt-2 w-[min(100vw-2rem,22rem)] animate-fade-up overflow-hidden">
+          <div className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} />
+          <div className="menu-panel absolute right-0 top-full z-[70] mt-2 w-[min(100vw-2rem,22rem)] animate-fade-up overflow-hidden">
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
               <div>
                 <p className="font-semibold text-gray-900">Notifications</p>
