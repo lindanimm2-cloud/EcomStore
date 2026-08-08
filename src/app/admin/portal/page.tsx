@@ -32,9 +32,11 @@ export default function PortalAdminPage() {
             <div className="card p-6">
               <h3 className="mb-4 font-semibold">Preview Customer Portal</h3>
               <p className="mb-4 text-sm text-gray-500">
-                See the client-facing portal as your customers would — logged in as demo user Lucrisha Polton (VIP).
+                Preview the client portal as demo customer Lucrisha Polton (VIP). Opens the customer login
+                — use password <span className="font-mono text-aheers-green-dark">aheers123</span> then OTP{" "}
+                <span className="font-mono text-aheers-green-dark">123456</span>.
               </p>
-              <Link href="/portal" className="btn-primary">
+              <Link href="/login/customer?next=/portal" className="btn-primary">
                 Open Client Portal Demo →
               </Link>
             </div>

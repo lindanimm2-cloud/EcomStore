@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ExternalLink,
   GripVertical,
+  Headphones,
   Inbox,
   MessageCircle,
   MoreHorizontal,
@@ -15,13 +16,21 @@ import {
   Search,
   Settings,
   Eye,
+  Send,
   X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/notifications-context";
 import { INITIAL_THREADS, initials } from "@/lib/team-chat";
+import {
+  appendAgentMessage,
+  claimSession,
+  endSession,
+  subscribeLiveSupport,
+  type LiveSession,
+} from "@/lib/live-support";
 
-type Panel = "chat" | "notify" | "search" | "calls" | "more" | null;
+type Panel = "chat" | "live" | "notify" | "search" | "calls" | "more" | null;
 
 const STORAGE_POS = "aheers-smart-lens-pos";
 const STORAGE_HIDDEN = "aheers-smart-lens-hidden";
@@ -30,7 +39,7 @@ export function CrmSmartLens() {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
-  const { unreadCount, listFor, markAllRead, markRead } = useNotifications();
+  const { unreadCount, listFor, markAllRead, markRead, addNotification } = useNotifications();
   const staffUnread = unreadCount("staff");
   const staffNotes = listFor("staff").slice(0, 6);
   const chatUnread = INITIAL_THREADS.reduce((s, t) => s + t.unread, 0);
@@ -42,6 +51,41 @@ export function CrmSmartLens() {
   const dragOffset = useRef({ x: 0, y: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
   const [searchQ, setSearchQ] = useState("");
+  const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
+  const [liveActiveId, setLiveActiveId] = useState<string | null>(null);
+  const [liveDraft, setLiveDraft] = useState("");
+  const prevWaiting = useRef(0);
+
+  useEffect(() => {
+    return subscribeLiveSupport((sessions) => {
+      setLiveSessions(sessions.filter((s) => s.status !== "ended" || Date.now() - s.updatedAt < 1000 * 60 * 30));
+      setLiveActiveId((prev) => {
+        if (prev && sessions.some((s) => s.id === prev && s.status !== "ended")) return prev;
+        const open = sessions.find((s) => s.status === "waiting" || s.status === "active");
+        return open?.id ?? null;
+      });
+      const waiting = sessions.filter((s) => s.status === "waiting").length;
+      if (waiting > prevWaiting.current) {
+        const newest = sessions.find((s) => s.status === "waiting");
+        if (newest) {
+          addNotification({
+            audience: "staff",
+            kind: "system",
+            title: "Live chat · Talk to human",
+            body: `${newest.customerName} wants an agent${newest.storeHint ? ` · ${newest.storeHint}` : ""}`,
+            href: `/admin/chat?thread=${newest.id}`,
+          });
+        }
+        setPanel((p) => (p == null ? "live" : p));
+      }
+      prevWaiting.current = waiting;
+    });
+  }, [addNotification]);
+
+  const liveWaiting = liveSessions.filter((s) => s.status === "waiting").length;
+  const liveOpen = liveSessions.filter((s) => s.status === "waiting" || s.status === "active").length;
+  const liveActive = liveSessions.find((s) => s.id === liveActiveId) ?? liveSessions.find((s) => s.status !== "ended");
+  const agentName = user?.name?.split(" ")[0] ?? "Agent";
 
   function clampPos(p: { x: number; y: number }) {
     if (typeof window === "undefined") return p;
@@ -136,7 +180,7 @@ export function CrmSmartLens() {
   if (pathname.startsWith("/admin/chat")) return null;
 
   const firstName = user?.name?.split(" ")[0] ?? "Staff";
-  const totalBadge = staffUnread + chatUnread;
+  const totalBadge = staffUnread + chatUnread + liveWaiting;
 
   function toggle(next: Panel) {
     setPanel((p) => (p === next ? null : next));
@@ -228,7 +272,7 @@ export function CrmSmartLens() {
           <div className="hidden min-w-0 leading-tight md:block">
             <p className="truncate font-display text-sm font-semibold text-white">{firstName}</p>
             <p className="truncate text-[11px] text-aheers-gold/75">
-              Aheers Lens · {totalBadge} notification{totalBadge === 1 ? "" : "s"}
+              Aheers Lens · {liveWaiting > 0 ? `${liveWaiting} live queue` : `${totalBadge} notification${totalBadge === 1 ? "" : "s"}`}
             </p>
           </div>
         </div>
@@ -261,6 +305,20 @@ export function CrmSmartLens() {
             {chatUnread > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-aheers-gold px-1 text-[9px] font-bold text-aheers-green-dark">
                 {chatUnread}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={`${iconBtn} ${panel === "live" ? iconActive : ""}`}
+            title="Customer live chats"
+            onClick={() => toggle("live")}
+          >
+            <Headphones className="h-4 w-4" />
+            {liveOpen > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-aheers-gold px-1 text-[9px] font-bold text-aheers-green-dark">
+                {liveOpen}
               </span>
             )}
           </button>
@@ -333,6 +391,174 @@ export function CrmSmartLens() {
           <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </button>
       </div>
+
+      {/* Live assist — respond as human when customer taps Talk to human */}
+      {panel === "live" && (
+        <div className={`${panelShell} flex w-[min(calc(100vw-16px),24rem)] flex-col`}>
+          <div className="flex items-center justify-between gap-3 border-b border-aheers-gold/15 px-4 py-3">
+            <div>
+              <h3 className="font-display text-base font-semibold text-white">Customer live</h3>
+              <p className="text-[10px] text-aheers-gold/70">
+                Reply as agent · also in Team chat
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Headphones className={`h-4 w-4 text-aheers-gold ${liveWaiting > 0 ? "animate-pulse" : ""}`} />
+              {liveWaiting > 0 && (
+                <span className="rounded-full bg-aheers-gold px-2 py-0.5 text-[10px] font-bold text-aheers-green-dark">
+                  {liveWaiting} waiting
+                </span>
+              )}
+            </div>
+          </div>
+
+          {liveSessions.filter((s) => s.status !== "ended").length === 0 ? (
+            <p className="px-4 py-10 text-center text-sm text-white/40">
+              No open handoffs. When a shopper taps Talk to human, they appear here and in Team chat.
+            </p>
+          ) : (
+            <>
+              <ul className="flex gap-1.5 overflow-x-auto border-b border-aheers-gold/10 px-3 py-2">
+                {liveSessions
+                  .filter((s) => s.status !== "ended")
+                  .map((s) => (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        onClick={() => setLiveActiveId(s.id)}
+                        className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
+                          liveActive?.id === s.id
+                            ? "bg-aheers-gold text-aheers-green-dark"
+                            : "bg-aheers-green/50 text-white/80 hover:bg-aheers-green"
+                        }`}
+                      >
+                        {s.customerName.split(" ")[0]}
+                        {s.status === "waiting" ? " · queue" : ""}
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+
+              {liveActive && (
+                <>
+                  <div className="border-b border-aheers-gold/10 px-4 py-2">
+                    <p className="text-sm font-semibold text-white">{liveActive.customerName}</p>
+                    <p className="text-[11px] text-white/45">
+                      {liveActive.storeHint ? `${liveActive.storeHint} · ` : ""}
+                      {liveActive.topic ?? "Help"} · {liveActive.status}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {liveActive.status === "waiting" && (
+                        <button
+                          type="button"
+                          onClick={() => claimSession(liveActive.id, agentName)}
+                          className="rounded-full bg-aheers-gold px-3 py-1 text-[11px] font-bold text-aheers-green-dark"
+                        >
+                          Claim & join
+                        </button>
+                      )}
+                      <Link
+                        href={`/admin/chat?thread=${liveActive.id}`}
+                        onClick={() => setPanel(null)}
+                        className="rounded-full border border-aheers-gold/40 px-3 py-1 text-[11px] font-semibold text-aheers-gold hover:bg-aheers-gold/10"
+                      >
+                        Open in Team chat
+                      </Link>
+                      {liveActive.status !== "ended" && (
+                        <button
+                          type="button"
+                          onClick={() => endSession(liveActive.id, "agent")}
+                          className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold text-white/70 hover:border-aheers-gold/40"
+                        >
+                          End chat
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="max-h-64 space-y-2 overflow-y-auto px-3 py-3">
+                    {liveActive.messages.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`text-xs leading-relaxed ${
+                          m.role === "system"
+                            ? "text-center text-white/35"
+                            : m.role === "agent"
+                              ? "ml-6 rounded-2xl rounded-br-md bg-aheers-gold/20 px-3 py-2 text-aheers-gold"
+                              : m.role === "assistant"
+                                ? "mr-6 rounded-2xl rounded-bl-md border border-white/10 bg-white/5 px-3 py-2 text-white/55"
+                                : "mr-6 rounded-2xl rounded-bl-md bg-white/10 px-3 py-2 text-white/90"
+                        }`}
+                      >
+                        {m.role !== "system" && (
+                          <span className="mb-0.5 block text-[9px] font-semibold uppercase tracking-wide text-white/40">
+                            {m.role === "agent"
+                              ? "You"
+                              : m.role === "assistant"
+                                ? "AI assistant"
+                                : "Customer"}{" "}
+                            · {m.at}
+                          </span>
+                        )}
+                        {m.text}
+                      </div>
+                    ))}
+                  </div>
+
+                  {liveActive.status !== "ended" && (
+                    <>
+                      <div className="flex flex-wrap gap-1.5 border-t border-aheers-gold/10 px-3 pt-2">
+                        {[
+                          "Hi — I’m with Aheers, how can I help?",
+                          "Thanks for waiting — looking into this now.",
+                          "I’ll check stock / delivery and reply shortly.",
+                        ].map((q) => (
+                          <button
+                            key={q}
+                            type="button"
+                            onClick={() => {
+                              if (liveActive.status === "waiting") claimSession(liveActive.id, agentName);
+                              appendAgentMessage(liveActive.id, q, agentName);
+                            }}
+                            className="rounded-full bg-aheers-green/60 px-2.5 py-1 text-[10px] font-medium text-white/80 hover:bg-aheers-gold/25 hover:text-aheers-gold"
+                          >
+                            {q.length > 36 ? `${q.slice(0, 34)}…` : q}
+                          </button>
+                        ))}
+                      </div>
+                      <form
+                        className="flex gap-2 border-t border-aheers-gold/15 p-3"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const text = liveDraft.trim();
+                          if (!text) return;
+                          if (liveActive.status === "waiting") claimSession(liveActive.id, agentName);
+                          appendAgentMessage(liveActive.id, text, agentName);
+                          setLiveDraft("");
+                        }}
+                      >
+                        <input
+                          value={liveDraft}
+                          onChange={(e) => setLiveDraft(e.target.value)}
+                          placeholder="Reply as human…"
+                          className="min-w-0 flex-1 rounded-xl border border-aheers-gold/20 bg-aheers-green-dark px-3 py-2 text-sm text-white placeholder:text-white/35 outline-none focus:border-aheers-gold/50"
+                        />
+                        <button
+                          type="submit"
+                          className="flex h-10 w-10 items-center justify-center rounded-xl bg-aheers-gold text-aheers-green-dark"
+                          aria-label="Send"
+                        >
+                          <Send className="h-4 w-4" />
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Chat dropdown */}
       {panel === "chat" && (
@@ -519,6 +745,14 @@ export function CrmSmartLens() {
             More
           </p>
           <div className="grid grid-cols-3 gap-1">
+            <button
+              type="button"
+              onClick={() => toggle("live")}
+              className="flex flex-col items-center gap-1 rounded-xl px-2 py-2.5 text-white/80 hover:bg-aheers-green/50 hover:text-aheers-gold"
+            >
+              <Headphones className="h-4 w-4" />
+              <span className="text-[10px] font-medium">Live</span>
+            </button>
             <button
               type="button"
               onClick={() => toggle("calls")}

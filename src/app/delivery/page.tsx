@@ -21,7 +21,7 @@ export default function DeliveryPage() {
           subtitle="Sixty60-style fulfilment — delivery, collect, curbside, express and wholesale trucks."
           actions={
             <>
-              <Link href="/store/supermarket" className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-aheers-green-dark">
+              <Link href="/" className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-aheers-green-dark">
                 Start an order
               </Link>
               <Link href="/track-order" className="rounded-xl border border-white/40 px-5 py-2.5 text-sm font-semibold text-white">

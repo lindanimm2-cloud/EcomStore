@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useState, useEffect, ReactNode } from "react";
+import { FormEvent, useState, useEffect, ReactNode, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, UserRole, DEMO_USERS, consumeSessionExpiredFlag } from "@/lib/auth-context";
 import { ReportThisButton, reportAppError } from "@/components/report-issue";
 
@@ -95,7 +95,25 @@ const THEMES: Record<
   },
 };
 
-export function LoginForm({
+export function LoginForm(props: {
+  title: string;
+  subtitle: string;
+  allowedRoles?: UserRole[];
+  showOtp?: boolean;
+  demoHint?: string;
+  variant?: LoginVariant;
+  brandLabel?: string;
+  footerExtra?: ReactNode;
+  hideRegister?: boolean;
+}) {
+  return (
+    <Suspense fallback={<div className="animate-pulse rounded-2xl bg-white/50 p-8 text-sm text-gray-400">Loading sign-in…</div>}>
+      <LoginFormInner {...props} />
+    </Suspense>
+  );
+}
+
+function LoginFormInner({
   title,
   subtitle,
   allowedRoles,
@@ -118,6 +136,8 @@ export function LoginForm({
 }) {
   const { login, loginOtp } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next");
   const theme = THEMES[variant];
   const [mode, setMode] = useState<"password" | "otp">("password");
   const [email, setEmail] = useState(
@@ -136,6 +156,11 @@ export function LoginForm({
     if (consumeSessionExpiredFlag()) setExpiredNotice(true);
   }, []);
 
+  function homeFor(role: UserRole) {
+    if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) return nextPath;
+    return ROLE_HOME[role] ?? "/portal";
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
@@ -150,7 +175,7 @@ export function LoginForm({
           return;
         }
         const role = res.user?.role ?? "customer";
-        router.push(ROLE_HOME[role] ?? "/portal");
+        router.push(homeFor(role));
         return;
       }
       const res = await login(email, password, allowedRoles);
@@ -160,7 +185,7 @@ export function LoginForm({
         reportAppError(msg);
         return;
       }
-      router.push(ROLE_HOME[res.user.role]);
+      router.push(homeFor(res.user.role));
     } finally {
       setBusy(false);
     }

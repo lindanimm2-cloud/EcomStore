@@ -41,7 +41,7 @@ const SEED: AppNotification[] = [
     body: "Thabo is on the way · ETA 12 min",
     kind: "delivery",
     audience: "customer",
-    href: "/portal/deliveries",
+    href: "/order/ORD-1043/track",
     createdAt: new Date(Date.now() - 12 * 60_000).toISOString(),
     read: false,
   },

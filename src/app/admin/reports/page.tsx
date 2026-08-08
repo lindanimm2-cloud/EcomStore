@@ -2,13 +2,15 @@ import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminHeader } from "@/components/admin-ui";
 import { ORDERS, CUSTOMERS, formatCurrency } from "@/lib/data";
 import { PRODUCTS } from "@/lib/products";
+import { STORES } from "@/lib/stores";
 
 export default function ReportsPage() {
-  const revenueByStore = {
-    supermarket: ORDERS.filter((o) => o.storeSlug === "supermarket").reduce((s, o) => s + o.total, 0),
-    powertrade: ORDERS.filter((o) => o.storeSlug === "powertrade").reduce((s, o) => s + o.total, 0),
-    grabngo: ORDERS.filter((o) => o.storeSlug === "grabngo").reduce((s, o) => s + o.total, 0),
-  };
+  const revenueByStore = Object.fromEntries(
+    STORES.map((s) => [
+      s.shortName,
+      ORDERS.filter((o) => o.storeSlug === s.slug).reduce((sum, o) => sum + o.total, 0),
+    ])
+  );
   const totalRevenue = Object.values(revenueByStore).reduce((a, b) => a + b, 0);
 
   return (
@@ -40,7 +42,7 @@ export default function ReportsPage() {
               {Object.entries(revenueByStore).map(([store, rev]) => (
                 <div key={store} className="mb-3">
                   <div className="mb-1 flex justify-between text-sm">
-                    <span className="capitalize font-medium">{store}</span>
+                    <span className="font-medium">{store}</span>
                     <span>{formatCurrency(rev)}</span>
                   </div>
                   <div className="h-3 overflow-hidden rounded-full bg-gray-100">

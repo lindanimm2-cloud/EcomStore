@@ -17,8 +17,11 @@ interface CartContextType {
   total: number;
   itemCount: number;
   getCartCount: (slug: StoreSlug) => number;
+  getCartTotal: (slug: StoreSlug) => number;
+  getCartItems: (slug: StoreSlug) => CartItem[];
   getQty: (productId: string, slug: StoreSlug) => number;
   hasCart: (slug: StoreSlug) => boolean;
+  storesWithCart: StoreSlug[];
   pendingStoreSwitch: StoreSlug | null;
   requestStoreSwitch: (slug: StoreSlug) => boolean;
   emptyAndSwitch: () => StoreSlug | null;
@@ -184,6 +187,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [carts]
   );
 
+  const getCartTotal = useCallback(
+    (slug: StoreSlug) =>
+      (carts[slug] ?? []).reduce((sum, i) => {
+        const price =
+          i.product.bulkPrice && i.qty >= (i.product.minQty ?? 0)
+            ? i.product.bulkPrice
+            : i.product.memberPrice ?? i.product.price;
+        return sum + price * i.qty;
+      }, 0),
+    [carts]
+  );
+
+  const getCartItems = useCallback((slug: StoreSlug) => carts[slug] ?? [], [carts]);
+
   const getQty = useCallback(
     (productId: string, slug: StoreSlug) =>
       (carts[slug] ?? []).find((i) => i.product.id === productId)?.qty ?? 0,
@@ -191,6 +208,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const hasCart = useCallback((slug: StoreSlug) => (carts[slug]?.length ?? 0) > 0, [carts]);
+
+  const storesWithCart = (Object.keys(carts) as StoreSlug[]).filter(
+    (slug) => (carts[slug]?.length ?? 0) > 0
+  );
 
   return (
     <CartContext.Provider
@@ -205,8 +226,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         total,
         itemCount,
         getCartCount,
+        getCartTotal,
+        getCartItems,
         getQty,
         hasCart,
+        storesWithCart,
         pendingStoreSwitch,
         requestStoreSwitch,
         emptyAndSwitch,

@@ -3,14 +3,27 @@
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-context";
-import { ShoppingBag, Plus, Minus } from "lucide-react";
+import { ShoppingBag, Plus, Minus, Star } from "lucide-react";
+
+/** Deterministic demo rating from product id — stable across renders */
+function demoRating(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h + id.charCodeAt(i) * (i + 3)) % 47;
+  const score = 3.8 + (h % 12) / 10;
+  const reviews = 12 + (h % 80);
+  return { score: Math.min(5, Math.round(score * 10) / 10), reviews };
+}
 
 export function ProductCard({ product }: { product: Product }) {
   const { getQty, addItem, updateQty } = useCart();
   const qty = getQty(product.id, product.storeSlug);
-  const displayPrice = product.memberPrice ?? product.bulkPrice ?? product.price;
+  const displayPrice = product.memberPrice ?? product.price;
+  const href = `/store/${product.storeSlug}/product/${product.id}`;
+  const { score, reviews } = demoRating(product.id);
 
-  function bump(delta: number) {
+  function bump(delta: number, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
     if (qty === 0 && delta > 0) {
       addItem(product, 1);
       return;
@@ -19,74 +32,93 @@ export function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <div className="card-hover group overflow-hidden">
-      <div className="relative flex h-40 items-center justify-center bg-gradient-to-b from-aheers-mist to-white text-6xl">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-aheers-green/10 bg-white shadow-[0_6px_24px_rgba(13,61,38,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-aheers-green/20 hover:shadow-lift sm:rounded-[1.35rem]">
+      <Link href={href} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
+
+      <div className="relative z-[1] pointer-events-none flex h-[7.25rem] items-center justify-center bg-[radial-gradient(ellipse_at_50%_30%,#f0f4f1,white_70%)] text-4xl sm:h-40 sm:text-5xl md:h-44 md:text-6xl">
         <span className="transition duration-300 group-hover:scale-110">{product.image}</span>
         {product.badge && (
-          <span className="absolute left-3 top-3 rounded-full bg-aheers-gold px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-aheers-green-dark">
+          <span className="absolute left-2 top-2 rounded-md bg-aheers-gold px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-aheers-green-dark sm:left-3 sm:top-3 sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-[10px]">
             {product.badge}
           </span>
         )}
-        {qty > 0 && (
-          <span className="absolute right-3 top-3 flex h-7 min-w-7 items-center justify-center rounded-full bg-aheers-green px-2 text-xs font-bold text-white shadow-soft">
-            {qty}
-          </span>
-        )}
       </div>
-      <div className="p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-400">{product.category}</p>
-        <h3 className="mt-1 font-semibold text-aheers-charcoal transition group-hover:text-aheers-green">{product.name}</h3>
-        <p className="mt-1 line-clamp-2 text-sm text-gray-500">{product.description}</p>
-        <div className="mt-4 flex items-end justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-lg font-bold text-aheers-green-dark">
-              R {displayPrice.toFixed(2)}
-              <span className="text-sm font-normal text-gray-400"> {product.unit}</span>
-            </p>
-            {product.memberPrice && (
-              <p className="text-xs text-aheers-green">Member · was R {product.price.toFixed(2)}</p>
-            )}
-            {product.bulkPrice && product.minQty && !product.memberPrice && (
-              <p className="text-xs text-powertrade-orange">
-                Bulk from R {product.bulkPrice.toFixed(2)} (min {product.minQty})
+
+      <div className="relative z-[1] flex flex-1 flex-col p-2.5 pt-2 sm:p-4 sm:pt-3">
+        <Link href={href} className="pointer-events-auto">
+          <p className="truncate text-[8px] font-semibold uppercase tracking-[0.12em] text-gray-400 sm:text-[10px] sm:tracking-[0.14em]">
+            {product.department ? `${product.department} · ${product.category}` : product.category}
+          </p>
+          <h3 className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-aheers-charcoal transition group-hover:text-aheers-green sm:mt-1 sm:min-h-[2.5rem] sm:text-[15px]">
+            {product.name}
+          </h3>
+          <p className="mt-0.5 truncate text-[10px] text-gray-400 sm:mt-1 sm:text-xs">{product.unit}</p>
+          <div className="mt-1.5 hidden items-center gap-1 sm:mt-2 sm:flex">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={`h-3 w-3 ${i < Math.round(score) ? "fill-aheers-gold text-aheers-gold" : "text-gray-200"}`}
+              />
+            ))}
+            <span className="ml-1 text-[11px] text-gray-400">
+              {score} · {reviews}
+            </span>
+          </div>
+        </Link>
+
+        <div className="mt-auto pt-2.5 sm:pt-4">
+          <div className="mb-2 flex items-end justify-between gap-1 sm:mb-3 sm:gap-2">
+            <div className="min-w-0">
+              <p className="text-base font-bold leading-none text-aheers-green-dark sm:text-xl">
+                R {displayPrice.toFixed(2)}
               </p>
-            )}
+              {product.memberPrice && (
+                <p className="mt-0.5 truncate text-[9px] font-medium text-aheers-green sm:mt-1 sm:text-[11px]">
+                  Member · <span className="line-through">R {product.price.toFixed(2)}</span>
+                </p>
+              )}
+              {product.bulkPrice && product.minQty && !product.memberPrice && (
+                <p className="mt-0.5 truncate text-[9px] font-medium text-powertrade-orange sm:mt-1 sm:text-[11px]">
+                  Bulk R {product.bulkPrice.toFixed(2)} · {product.minQty}+
+                </p>
+              )}
+            </div>
           </div>
 
           {qty === 0 ? (
             <button
               type="button"
-              onClick={() => bump(1)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-aheers-green text-white shadow-soft transition hover:bg-aheers-green-light hover:shadow-lift"
-              aria-label={`Add ${product.name}`}
+              onClick={(e) => bump(1, e)}
+              className="pointer-events-auto relative z-[2] flex w-full items-center justify-center gap-1 rounded-xl bg-aheers-green py-2 text-[12px] font-bold text-white shadow-soft transition hover:bg-aheers-green-light active:scale-[0.98] sm:gap-2 sm:py-2.5 sm:text-sm"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
+              <span className="sm:hidden">Add</span>
+              <span className="hidden sm:inline">Add to cart</span>
             </button>
           ) : (
-            <div className="flex shrink-0 items-center gap-0.5 rounded-xl bg-aheers-green p-0.5 text-white shadow-soft">
+            <div className="pointer-events-auto relative z-[2] flex h-9 w-full items-center justify-between rounded-xl bg-aheers-green text-white shadow-soft sm:h-11">
               <button
                 type="button"
-                onClick={() => bump(-1)}
-                className="flex h-9 w-9 items-center justify-center rounded-[0.65rem] hover:bg-white/15"
+                onClick={(e) => bump(-1, e)}
+                className="flex h-9 w-9 items-center justify-center rounded-l-xl hover:bg-white/15 sm:h-11 sm:w-12"
                 aria-label="Decrease quantity"
               >
-                <Minus className="h-4 w-4" />
+                <Minus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
               </button>
-              <span className="min-w-[1.75rem] text-center text-sm font-bold tabular-nums">{qty}</span>
+              <span className="text-[11px] font-bold tabular-nums sm:text-sm">{qty}</span>
               <button
                 type="button"
-                onClick={() => bump(1)}
-                className="flex h-9 w-9 items-center justify-center rounded-[0.65rem] hover:bg-white/15"
+                onClick={(e) => bump(1, e)}
+                className="flex h-9 w-9 items-center justify-center rounded-r-xl hover:bg-white/15 sm:h-11 sm:w-12"
                 aria-label="Increase quantity"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
               </button>
             </div>
           )}
         </div>
-        <p className="mt-2 text-xs text-gray-400">{product.inStock} in stock</p>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -95,7 +127,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
     return <p className="py-12 text-center text-gray-500">No products found.</p>;
   }
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 xl:gap-5">
       {products.map((p) => (
         <ProductCard key={p.id} product={p} />
       ))}
@@ -104,36 +136,43 @@ export function ProductGrid({ products }: { products: Product[] }) {
 }
 
 export function CartLineItem({
-  name,
+  product,
   price,
   qty,
   onUpdate,
   onRemove,
 }: {
-  name: string;
+  product: Product;
   price: number;
   qty: number;
   onUpdate: (qty: number) => void;
   onRemove: () => void;
 }) {
+  const href = `/store/${product.storeSlug}/product/${product.id}`;
+
   return (
-    <div className="flex items-center justify-between border-b border-aheers-green/10 py-4">
-      <div className="flex-1">
-        <p className="font-medium text-aheers-charcoal">{name}</p>
-        <p className="text-sm text-gray-500">R {price.toFixed(2)} each</p>
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 rounded-xl border border-aheers-green/15 bg-white">
-          <button onClick={() => onUpdate(qty - 1)} className="p-2 hover:bg-aheers-mist" type="button">
+    <div className="flex items-center justify-between gap-3 border-b border-aheers-green/10 py-4 last:border-0">
+      <Link href={href} className="flex min-w-0 flex-1 items-center gap-3 transition hover:opacity-90">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-aheers-mist text-2xl">
+          {product.image}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-aheers-charcoal">{product.name}</p>
+          <p className="text-sm text-gray-500">R {price.toFixed(2)} each</p>
+        </div>
+      </Link>
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex items-center rounded-xl border border-aheers-green/15 bg-white">
+          <button onClick={() => onUpdate(qty - 1)} className="p-2.5 hover:bg-aheers-mist" type="button">
             <Minus className="h-3.5 w-3.5" />
           </button>
-          <span className="w-8 text-center text-sm font-medium">{qty}</span>
-          <button onClick={() => onUpdate(qty + 1)} className="p-2 hover:bg-aheers-mist" type="button">
+          <span className="w-8 text-center text-sm font-semibold">{qty}</span>
+          <button onClick={() => onUpdate(qty + 1)} className="p-2.5 hover:bg-aheers-mist" type="button">
             <Plus className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className="w-20 text-right font-semibold">R {(price * qty).toFixed(2)}</p>
-        <button onClick={onRemove} type="button" className="text-xs text-red-500 hover:underline">
+        <p className="w-16 text-right text-sm font-semibold sm:w-20">R {(price * qty).toFixed(2)}</p>
+        <button onClick={onRemove} type="button" className="text-xs font-medium text-red-500 hover:underline">
           Remove
         </button>
       </div>
@@ -147,44 +186,6 @@ export function EmptyState({ message, action }: { message: string; action?: Reac
       <ShoppingBag className="mb-4 h-12 w-12 text-aheers-green/30" />
       <p className="text-gray-500">{message}</p>
       {action && <div className="mt-4">{action}</div>}
-    </div>
-  );
-}
-
-/** Sticky cart summary — visible while shopping a store */
-export function StoreCartBar({ storeSlug }: { storeSlug: string }) {
-  const { getCartCount, total, activeStore, setActiveStore, items } = useCart();
-  const count = getCartCount(storeSlug as Parameters<typeof getCartCount>[0]);
-  if (count <= 0) return null;
-
-  // Prefer this store's total when it's active; otherwise estimate from stored cart isn't exported —
-  // ensure store is active when showing bar from store page (parent sets active).
-  const showTotal = activeStore === storeSlug ? total : null;
-  const lineCount = activeStore === storeSlug ? items.length : count;
-
-  return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:p-4">
-      <Link
-        href={`/store/${storeSlug}/cart`}
-        onClick={() => setActiveStore(storeSlug as Parameters<typeof setActiveStore>[0])}
-        className="pointer-events-auto mx-auto flex max-w-lg items-center justify-between gap-3 rounded-2xl bg-aheers-green-dark px-4 py-3.5 text-white shadow-lift ring-1 ring-white/10"
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-aheers-green text-white">
-            <ShoppingBag className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">
-              {count} item{count === 1 ? "" : "s"} in cart
-              {lineCount !== count && activeStore === storeSlug ? ` · ${lineCount} lines` : ""}
-            </p>
-            <p className="text-xs text-white/60">Tap to view cart · checkout</p>
-          </div>
-        </div>
-        <span className="shrink-0 rounded-xl bg-aheers-gold px-3 py-2 text-sm font-bold text-aheers-green-dark">
-          {showTotal != null ? `R ${showTotal.toFixed(2)}` : "View"}
-        </span>
-      </Link>
     </div>
   );
 }

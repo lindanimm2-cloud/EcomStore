@@ -6,7 +6,6 @@ import { StoreSwitcher, SiteFooter } from "@/components/layout";
 import { ORDERS, CUSTOMERS, formatDate, formatCurrency } from "@/lib/data";
 import { FLEET_VEHICLES } from "@/lib/fleet";
 import { getStore } from "@/lib/stores";
-import { FleetMap } from "@/components/fleet-map";
 import { useAuth } from "@/lib/auth-context";
 import {
   loadQueue,
@@ -15,21 +14,26 @@ import {
 } from "@/lib/delivery-queue";
 import { STORES } from "@/lib/stores";
 import { PrettySelect } from "@/components/pretty-select";
-import { ArrowLeft, Truck, MapPin, Clock, Phone, Plus, CheckCircle } from "lucide-react";
+import { ArrowLeft, Truck, MapPin, Clock, Phone, Plus, CheckCircle, ChevronRight } from "lucide-react";
+import { orderHref, orderTrackHref } from "@/lib/order-helpers";
 
 export default function DeliveriesPage() {
   const { user } = useAuth();
   const profile =
     CUSTOMERS.find((c) => c.id === user?.customerId) ??
     CUSTOMERS.find((c) => c.email.toLowerCase() === (user?.email ?? "").toLowerCase()) ??
-    CUSTOMERS[1];
+    null;
 
   const [queue, setQueue] = useState<DeliveryJob[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [address, setAddress] = useState(profile.address ?? "Greytown");
+  const [address, setAddress] = useState("Greytown");
   const [note, setNote] = useState("");
   const [storeSlug, setStoreSlug] = useState("supermarket");
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    if (profile?.address) setAddress(profile.address);
+  }, [profile?.address]);
 
   useEffect(() => {
     setQueue(loadQueue());
@@ -42,27 +46,34 @@ export default function DeliveriesPage() {
     };
   }, []);
 
-  const myJobs = queue.filter(
-    (j) => j.customerId === profile.id || j.customerName === profile.name
-  );
+  const myJobs = profile
+    ? queue.filter((j) => j.customerId === profile.id || j.customerName === profile.name)
+    : queue.filter((j) => j.customerName === user?.name || j.customerId === user?.customerId);
   const openJobs = myJobs.filter((j) => j.status !== "delivered");
   const doneJobs = myJobs.filter((j) => j.status === "delivered");
 
-  const activeDeliveries = ORDERS.filter(
-    (o) => o.customerId === profile.id && ["processing", "dispatched"].includes(o.status)
-  );
-  const pastDeliveries = ORDERS.filter(
-    (o) => o.customerId === profile.id && o.type === "delivery" && ["delivered", "cancelled"].includes(o.status)
-  );
+  const activeDeliveries = profile
+    ? ORDERS.filter(
+        (o) => o.customerId === profile.id && ["processing", "dispatched"].includes(o.status)
+      )
+    : [];
+  const pastDeliveries = profile
+    ? ORDERS.filter(
+        (o) =>
+          o.customerId === profile.id &&
+          o.type === "delivery" &&
+          ["delivered", "cancelled"].includes(o.status)
+      )
+    : [];
 
   function submitRequest(e: React.FormEvent) {
     e.preventDefault();
     if (!address.trim()) return;
     requestCustomerDelivery({
-      customerName: profile.name,
-      customerId: profile.id,
+      customerName: profile?.name ?? user?.name ?? "Guest",
+      customerId: profile?.id ?? user?.customerId ?? user?.id ?? "guest",
       address: address.trim(),
-      phone: profile.phone,
+      phone: profile?.phone ?? "",
       note: note.trim() || "Customer requested delivery",
       storeSlug,
     });
@@ -85,7 +96,10 @@ export default function DeliveriesPage() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold">My Deliveries</h1>
-                <p className="mt-1 opacity-80">Live tracking · Request delivery · Driver notes · {profile.name}</p>
+                <p className="mt-1 opacity-80">
+                  Live tracking · Request delivery · Driver notes ·{" "}
+                  {profile?.name ?? user?.name ?? "Your account"}
+                </p>
               </div>
               <button
                 type="button"
@@ -183,16 +197,21 @@ export default function DeliveriesPage() {
                 {activeDeliveries.map((order) => {
                   const fleet = order.fleetId ? FLEET_VEHICLES.find((f) => f.id === order.fleetId) : null;
                   return (
-                    <div key={order.id} className="card p-5">
+                    <Link
+                      key={order.id}
+                      href={orderTrackHref(order.id)}
+                      className="card block p-5 transition hover:border-aheers-green/25 hover:shadow-lift"
+                    >
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <p className="font-semibold">{order.id}</p>
+                          <p className="font-semibold text-aheers-green-dark">{order.id}</p>
                           <p className="text-sm text-gray-500">
                             {getStore(order.storeSlug)?.name} · {formatDate(order.createdAt)}
                           </p>
                         </div>
-                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium capitalize text-amber-800">
-                          {order.status}
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium capitalize text-amber-800">
+                          {order.status} · Live
+                          <ChevronRight className="h-3.5 w-3.5" />
                         </span>
                       </div>
                       {fleet && (
@@ -208,10 +227,10 @@ export default function DeliveriesPage() {
                               <Phone className="h-4 w-4" /> {fleet.phone}
                             </span>
                           </div>
-                          <FleetMap />
+                          <p className="text-xs font-semibold text-aheers-green">Open live tracking →</p>
                         </div>
                       )}
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -253,13 +272,20 @@ export default function DeliveriesPage() {
                 <p className="text-sm text-gray-500">No past deliveries for this account.</p>
               )}
               {pastDeliveries.map((order) => (
-                <div key={order.id} className="card flex justify-between p-4 text-sm">
+                <Link
+                  key={order.id}
+                  href={orderHref(order.id)}
+                  className="card flex justify-between p-4 text-sm transition hover:border-aheers-green/20"
+                >
                   <div>
-                    <p className="font-medium">{order.id}</p>
+                    <p className="font-medium text-aheers-charcoal">{order.id}</p>
                     <p className="text-gray-500">{formatDate(order.createdAt)}</p>
                   </div>
-                  <span className="capitalize text-gray-500">{order.status}</span>
-                </div>
+                  <span className="inline-flex items-center gap-1 capitalize text-gray-500">
+                    {order.status}
+                    <ChevronRight className="h-4 w-4 text-gray-300" />
+                  </span>
+                </Link>
               ))}
             </div>
           </section>

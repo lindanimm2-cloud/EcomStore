@@ -352,7 +352,14 @@ export default function DriverPortalPage() {
                   <Clock className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-aheers-charcoal">Shift · Wed 5 Aug</p>
+                  <p className="text-sm font-semibold text-aheers-charcoal">
+                    Shift ·{" "}
+                    {new Date().toLocaleDateString("en-ZA", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </p>
                   <p className="text-xs text-gray-500">06:00 – 15:00 · {DRIVER_VEHICLE.name}</p>
                 </div>
               </div>

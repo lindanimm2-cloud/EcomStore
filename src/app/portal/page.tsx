@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { StoreSwitcher, SiteFooter } from "@/components/layout";
 import { ORDERS, COMPETITIONS, CUSTOMERS, formatCurrency, formatDate } from "@/lib/data";
 import { FLEET_VEHICLES } from "@/lib/fleet";
@@ -10,6 +11,9 @@ import { Package, Gift, Star, Truck, User, ArrowLeft, LogOut } from "lucide-reac
 
 export default function ClientPortalPage() {
   const { user, logout } = useAuth();
+  const [entered, setEntered] = useState<Record<string, boolean>>({});
+  const [toast, setToast] = useState("");
+
   const profile = (() => {
     const match =
       CUSTOMERS.find((c) => c.id === user?.customerId) ??
@@ -37,10 +41,22 @@ export default function ClientPortalPage() {
   const myOrders = ORDERS.filter((o) => o.customerId === profile.id);
   const activeCompetitions = COMPETITIONS.filter((c) => c.status === "active");
 
+  function enterCompetition(id: string, title: string) {
+    setEntered((prev) => ({ ...prev, [id]: true }));
+    try {
+      const key = `aheers-comp-${id}`;
+      localStorage.setItem(key, "1");
+    } catch {
+      /* ignore */
+    }
+    setToast(`Entered “${title}” — demo entry saved`);
+    setTimeout(() => setToast(""), 2800);
+  }
+
   return (
     <>
       <StoreSwitcher />
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-50 pb-28 md:pb-0">
         <div className="bg-aheers-green text-white">
           <div className="mx-auto max-w-4xl px-4 py-8">
             <div className="mb-4 flex items-center justify-between">
@@ -88,8 +104,15 @@ export default function ClientPortalPage() {
               </div>
               <div className="mt-6 flex justify-center rounded-lg bg-white p-4">
                 <div className="text-center text-aheers-green-dark">
-                  <div className="mx-auto mb-2 flex h-24 w-48 items-center justify-center rounded border-2 border-dashed border-gray-300 bg-white font-mono text-xs">
-                    ||||| QR CODE |||||
+                  <div
+                    className="mx-auto mb-2 flex h-28 w-28 items-center justify-center rounded-xl border border-aheers-green/15 bg-[repeating-linear-gradient(90deg,#0D3D26_0_2px,transparent_2px_4px),repeating-linear-gradient(#0D3D26_0_2px,transparent_2px_4px)] bg-[length:12px_12px] p-2"
+                    aria-hidden
+                  >
+                    <div className="flex h-full w-full items-center justify-center rounded-lg bg-white">
+                      <span className="font-mono text-[10px] font-bold tracking-wider text-aheers-green-dark">
+                        {profile.infinityCardId}
+                      </span>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500">Scan at checkout · 1% cashback on qualifying purchases</p>
                 </div>
@@ -123,7 +146,11 @@ export default function ClientPortalPage() {
             .map((order) => {
               const fleet = order.fleetId ? FLEET_VEHICLES.find((f) => f.id === order.fleetId) : null;
               return (
-                <div key={order.id} className="mb-8 card border-l-4 border-l-amber-400 p-6">
+                <Link
+                  key={order.id}
+                  href={`/order/${order.id}/track`}
+                  className="mb-8 card block border-l-4 border-l-amber-400 p-6 transition hover:shadow-lift"
+                >
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-semibold text-gray-900">Order {order.id} — In Progress</p>
@@ -132,7 +159,7 @@ export default function ClientPortalPage() {
                       </p>
                     </div>
                     <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-                      Processing
+                      Live track
                     </span>
                   </div>
                   <ul className="mt-3 space-y-1 text-sm text-gray-600">
@@ -155,7 +182,8 @@ export default function ClientPortalPage() {
                       </div>
                     </div>
                   )}
-                </div>
+                  <p className="mt-3 text-xs font-semibold text-aheers-green">Open live tracking →</p>
+                </Link>
               );
             })}
 
@@ -168,10 +196,18 @@ export default function ClientPortalPage() {
                 <p className="text-sm text-gray-500">No orders yet — start shopping from the Super App home.</p>
               )}
               {myOrders.map((order) => (
-                <div key={order.id} className="card p-4">
+                <Link
+                  key={order.id}
+                  href={
+                    ["pending", "processing", "dispatched"].includes(order.status)
+                      ? `/order/${order.id}/track`
+                      : `/order/${order.id}`
+                  }
+                  className="card block p-4 transition hover:border-aheers-green/20 hover:shadow-lift"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{order.id}</p>
+                      <p className="font-medium text-aheers-charcoal">{order.id}</p>
                       <p className="text-sm text-gray-500">
                         {getStore(order.storeSlug)?.shortName} · {formatDate(order.createdAt)}
                       </p>
@@ -181,7 +217,7 @@ export default function ClientPortalPage() {
                       <p className="text-xs capitalize text-gray-400">{order.status}</p>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
@@ -201,8 +237,13 @@ export default function ClientPortalPage() {
                   <p className="mt-1 text-xs text-gray-400">
                     Ends {formatDate(comp.endsAt)} · {comp.entries} entries
                   </p>
-                  <button type="button" className="mt-3 w-full rounded-lg bg-aheers-green py-2 text-sm font-medium text-white hover:bg-aheers-green-light">
-                    Enter Now (Demo)
+                  <button
+                    type="button"
+                    disabled={entered[comp.id]}
+                    onClick={() => enterCompetition(comp.id, comp.title)}
+                    className="mt-3 w-full rounded-lg bg-aheers-green py-2 text-sm font-medium text-white hover:bg-aheers-green-light disabled:cursor-default disabled:bg-aheers-green/50"
+                  >
+                    {entered[comp.id] ? "Entered ✓" : "Enter now (demo)"}
                   </button>
                 </div>
               ))}
@@ -222,6 +263,11 @@ export default function ClientPortalPage() {
           </p>
         </div>
       </main>
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-aheers-green-dark px-4 py-2 text-sm font-semibold text-white shadow-lift">
+          {toast}
+        </div>
+      )}
       <SiteFooter />
     </>
   );

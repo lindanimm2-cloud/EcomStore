@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCart, getActiveStoreName } from "@/lib/cart-context";
 import { getStore } from "@/lib/stores";
 import { StoreSlug } from "@/lib/types";
+import { storeHomePath } from "@/lib/store-paths";
 import { AlertTriangle } from "lucide-react";
 
 export function StoreSwitchModal() {
@@ -26,16 +27,16 @@ export function StoreSwitchModal() {
   const targetCartCount = getCartCount(pendingStoreSwitch);
 
   const go = (slug: StoreSlug | null) => {
-    if (slug) router.push(`/store/${slug}`);
+    if (slug) router.push(storeHomePath(slug));
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-          <AlertTriangle className="h-6 w-6 text-amber-600" />
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-aheers-mist">
+          <AlertTriangle className="h-6 w-6 text-aheers-gold" />
         </div>
-        <h3 className="text-lg font-bold text-gray-900">You have an active cart</h3>
+        <h3 className="font-display text-lg font-semibold text-aheers-green-dark">You have an active cart</h3>
         <p className="mt-2 text-sm text-gray-600">
           You currently have <strong>{itemCount} item{itemCount !== 1 ? "s" : ""}</strong> in{" "}
           <strong>{current?.name ?? getActiveStoreName(storeSlug)}</strong>.
@@ -102,7 +103,8 @@ export function useStoreNavigation() {
   const goToStore = (slug: StoreSlug) => {
     if (requestStoreSwitch(slug)) {
       setActiveStore(slug);
-      router.push(`/store/${slug}`);
+      // Supermarket is the primary landing page (Bash-style brand home)
+      router.push(slug === "supermarket" ? "/" : `/store/${slug}`);
     }
   };
 

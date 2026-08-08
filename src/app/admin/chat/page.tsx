@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AdminSidebar } from "@/components/admin-sidebar";
@@ -8,11 +8,19 @@ import {
   INITIAL_THREADS,
   TEAM_COLLEAGUES,
   ChatThread,
+  ChatMessage,
   initials,
   senderLabel,
 } from "@/lib/team-chat";
 import { PrettySelect } from "@/components/pretty-select";
 import { useAuth } from "@/lib/auth-context";
+import {
+  appendAgentMessage,
+  claimSession,
+  endSession,
+  subscribeLiveSupport,
+  type LiveSession,
+} from "@/lib/live-support";
 import {
   CalendarDays,
   CheckSquare,
@@ -25,6 +33,7 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  Headphones,
 } from "lucide-react";
 
 export default function TeamChatPage() {
@@ -67,31 +76,91 @@ function PreviewLine({ text }: { text: string }) {
   );
 }
 
+function liveToThread(s: LiveSession, seenMsgCount: number): ChatThread {
+  const last = s.messages[s.messages.length - 1];
+  const preview =
+    last?.role === "system"
+      ? last.text
+      : last?.text?.slice(0, 80) || s.topic || "Live chat";
+  const statusLabel =
+    s.status === "waiting" ? "Waiting for agent" : s.status === "active" ? `Live · ${s.claimedBy ?? "agent"}` : "Ended";
+  const messages: ChatMessage[] = s.messages.map((m) => ({
+    id: m.id,
+    senderId:
+      m.role === "agent"
+        ? "me"
+        : m.role === "customer"
+          ? "customer"
+          : m.role === "assistant"
+            ? "assistant"
+            : "system",
+    text: m.text,
+    at: m.at,
+    mine: m.role === "agent",
+  }));
+  const newCustomerMsgs = s.messages.filter((m) => m.role === "customer").length;
+  return {
+    id: s.id,
+    kind: "customer",
+    name: s.customerName,
+    subtitle: [s.storeHint, statusLabel, s.topic].filter(Boolean).join(" · "),
+    unread: s.status === "waiting" ? Math.max(1, newCustomerMsgs - seenMsgCount) : 0,
+    lastAt: last?.at ?? "Now",
+    preview,
+    messages,
+  };
+}
+
 function TeamChatInner() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
-  const [threads, setThreads] = useState(INITIAL_THREADS);
+  const [teamThreads, setTeamThreads] = useState(INITIAL_THREADS);
+  const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
   const [activeId, setActiveId] = useState(INITIAL_THREADS[0].id);
   const [draft, setDraft] = useState("");
   const [q, setQ] = useState("");
   const [newPeer, setNewPeer] = useState(TEAM_COLLEAGUES[0].id);
   const [toast, setToast] = useState("");
-  /** Mobile: list vs open conversation (desktop always shows both) */
   const [mobilePane, setMobilePane] = useState<"list" | "thread">("list");
   const [newChatOpen, setNewChatOpen] = useState(false);
+  const seenLive = useRef<Record<string, number>>({});
+  const autoOpened = useRef<string | null>(null);
+
+  useEffect(() => {
+    return subscribeLiveSupport((sessions) => {
+      const open = sessions.filter((s) => s.status === "waiting" || s.status === "active");
+      setLiveSessions(open);
+
+      const waiting = open.find((s) => s.status === "waiting");
+      if (waiting && autoOpened.current !== waiting.id) {
+        autoOpened.current = waiting.id;
+        setActiveId(waiting.id);
+        setMobilePane("thread");
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const thread = searchParams.get("thread");
-    if (thread && INITIAL_THREADS.some((t) => t.id === thread)) {
-      setActiveId(thread);
-      setMobilePane("thread");
-      setThreads((prev) => prev.map((t) => (t.id === thread ? { ...t, unread: 0 } : t)));
-    }
+    if (!thread) return;
+    setActiveId(thread);
+    setMobilePane("thread");
+    setTeamThreads((prev) => prev.map((t) => (t.id === thread ? { ...t, unread: 0 } : t)));
   }, [searchParams]);
 
+  const liveThreads = useMemo(
+    () => liveSessions.map((s) => liveToThread(s, seenLive.current[s.id] ?? 0)),
+    [liveSessions]
+  );
+
+  const threads = useMemo(() => [...liveThreads, ...teamThreads], [liveThreads, teamThreads]);
+
   const active = threads.find((t) => t.id === activeId) ?? threads[0];
+  const activeLive = liveSessions.find((s) => s.id === activeId);
+  const isLiveThread = Boolean(activeLive);
   const peer = TEAM_COLLEAGUES.find((c) => c.id === active?.peerId);
   const meName = user?.name?.split(" ")[0] ?? "You";
+  const agentName = meName;
 
   const filtered = useMemo(() => {
     const needle = q.toLowerCase();
@@ -99,9 +168,13 @@ function TeamChatInner() {
       (t) =>
         !needle ||
         t.name.toLowerCase().includes(needle) ||
-        t.preview.toLowerCase().includes(needle)
+        t.preview.toLowerCase().includes(needle) ||
+        (t.subtitle?.toLowerCase().includes(needle) ?? false)
     );
   }, [threads, q]);
+
+  const liveFiltered = filtered.filter((t) => liveSessions.some((s) => s.id === t.id));
+  const teamFiltered = filtered.filter((t) => !liveSessions.some((s) => s.id === t.id));
 
   function flash(msg: string) {
     setToast(msg);
@@ -112,13 +185,25 @@ function TeamChatInner() {
     setActiveId(id);
     setMobilePane("thread");
     setNewChatOpen(false);
-    setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, unread: 0 } : t)));
+    setTeamThreads((prev) => prev.map((t) => (t.id === id ? { ...t, unread: 0 } : t)));
+    const live = liveSessions.find((s) => s.id === id);
+    if (live) {
+      seenLive.current[id] = live.messages.filter((m) => m.role === "customer").length;
+    }
   }
 
   function send(e: FormEvent) {
     e.preventDefault();
     const text = draft.trim();
     if (!text || !active) return;
+
+    if (activeLive) {
+      if (activeLive.status === "waiting") claimSession(activeLive.id, agentName);
+      appendAgentMessage(activeLive.id, text, agentName);
+      setDraft("");
+      return;
+    }
+
     const msg = {
       id: `m-${Date.now()}`,
       senderId: "me",
@@ -126,7 +211,7 @@ function TeamChatInner() {
       at: new Date().toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" }),
       mine: true,
     };
-    setThreads((prev) =>
+    setTeamThreads((prev) =>
       prev.map((t) =>
         t.id === active.id
           ? { ...t, messages: [...t.messages, msg], preview: text, lastAt: "Now" }
@@ -139,7 +224,7 @@ function TeamChatInner() {
   function startChat() {
     const col = TEAM_COLLEAGUES.find((c) => c.id === newPeer);
     if (!col) return;
-    const existing = threads.find((t) => t.peerId === col.id && t.kind === "dm");
+    const existing = teamThreads.find((t) => t.peerId === col.id && t.kind === "dm");
     if (existing) {
       openThread(existing.id);
       flash(`Opened chat with ${col.name}`);
@@ -164,7 +249,7 @@ function TeamChatInner() {
         },
       ],
     };
-    setThreads((prev) => [neu, ...prev]);
+    setTeamThreads((prev) => [neu, ...prev]);
     setActiveId(neu.id);
     setMobilePane("thread");
     setNewChatOpen(false);
@@ -175,11 +260,65 @@ function TeamChatInner() {
   const showList = mobilePane === "list";
   const showThread = mobilePane === "thread";
 
+  function renderThreadRow(t: ChatThread) {
+    const live = liveSessions.find((s) => s.id === t.id);
+    return (
+      <li key={t.id}>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => openThread(t.id)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") openThread(t.id);
+          }}
+          className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl px-3 py-3 text-left transition active:scale-[0.99] ${
+            t.id === active?.id
+              ? "bg-aheers-gold/15 ring-1 ring-aheers-gold/30"
+              : "hover:bg-white/5"
+          }`}
+        >
+          <span
+            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+              live
+                ? "bg-aheers-green text-white"
+                : "bg-aheers-gold text-aheers-green-dark"
+            }`}
+          >
+            {initials(t.name)}
+            {live?.status === "waiting" && (
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-aheers-gold ring-2 ring-[#101612]" />
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center justify-between gap-2">
+              <span className="truncate text-sm font-semibold text-white">
+                {live ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Headphones className="h-3 w-3 text-aheers-gold" />
+                    {t.name}
+                  </span>
+                ) : (
+                  t.name
+                )}
+              </span>
+              <span className="shrink-0 text-[10px] text-white/35">{t.lastAt}</span>
+            </span>
+            <PreviewLine text={t.preview} />
+          </span>
+          {t.unread > 0 && (
+            <span className="mt-1 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark">
+              {t.unread}
+            </span>
+          )}
+        </div>
+      </li>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100dvh-3.5rem)] max-w-[100vw] overflow-hidden bg-[#0b0f0d] lg:h-dvh">
       <AdminSidebar />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden text-white">
-        {/* Page chrome — list only on mobile */}
         <div
           className={`shrink-0 px-3 pb-2 pt-2 md:px-6 md:pt-3 ${
             showThread ? "hidden lg:block" : ""
@@ -192,6 +331,7 @@ function TeamChatInner() {
               </h1>
               <p className="mt-0.5 truncate text-xs text-white/45 md:text-sm">
                 Hi {meName} · {unreadTotal} unread
+                {liveSessions.length > 0 ? ` · ${liveSessions.length} live customer` : ""}
               </p>
             </div>
             <div className="flex shrink-0 gap-1.5 overflow-x-auto">
@@ -227,7 +367,6 @@ function TeamChatInner() {
               : "mx-2 mb-2 rounded-2xl border border-white/10 sm:mx-4 sm:mb-4"
           }`}
         >
-          {/* Chat list */}
           <aside
             className={`min-h-0 min-w-0 flex-col border-white/10 lg:flex lg:border-r ${
               showList ? "flex" : "hidden"
@@ -267,39 +406,18 @@ function TeamChatInner() {
             </div>
 
             <ul className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain px-2 pb-3">
-              {filtered.map((t) => (
-                <li key={t.id}>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openThread(t.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") openThread(t.id);
-                    }}
-                    className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl px-3 py-3 text-left transition active:scale-[0.99] ${
-                      t.id === active?.id
-                        ? "bg-aheers-gold/15 ring-1 ring-aheers-gold/30"
-                        : "hover:bg-white/5"
-                    }`}
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-aheers-gold text-xs font-bold text-aheers-green-dark">
-                      {initials(t.name)}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="truncate text-sm font-semibold text-white">{t.name}</span>
-                        <span className="shrink-0 text-[10px] text-white/35">{t.lastAt}</span>
-                      </span>
-                      <PreviewLine text={t.preview} />
-                    </span>
-                    {t.unread > 0 && (
-                      <span className="mt-1 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark">
-                        {t.unread}
-                      </span>
-                    )}
-                  </div>
+              {liveFiltered.length > 0 && (
+                <li className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-aheers-gold/80">
+                  Live customers
                 </li>
-              ))}
+              )}
+              {liveFiltered.map(renderThreadRow)}
+              {teamFiltered.length > 0 && liveFiltered.length > 0 && (
+                <li className="px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-white/35">
+                  Team
+                </li>
+              )}
+              {teamFiltered.map(renderThreadRow)}
               {filtered.length === 0 && (
                 <li className="px-4 py-10 text-center text-sm text-white/40">No chats match your search</li>
               )}
@@ -333,7 +451,6 @@ function TeamChatInner() {
             </div>
           </aside>
 
-          {/* Conversation */}
           <section
             className={`min-h-0 min-w-0 flex-col lg:flex ${showThread ? "flex" : "hidden"}`}
           >
@@ -349,8 +466,12 @@ function TeamChatInner() {
                     <ArrowLeft className="h-5 w-5" />
                     Chats
                   </button>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aheers-gold text-sm font-bold text-aheers-green-dark">
-                    {initials(active.name)}
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                      isLiveThread ? "bg-aheers-green text-white" : "bg-aheers-gold text-aheers-green-dark"
+                    }`}
+                  >
+                    {isLiveThread ? <Headphones className="h-4 w-4" /> : initials(active.name)}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-white">{active.name}</p>
@@ -359,64 +480,120 @@ function TeamChatInner() {
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-1 sm:gap-2">
-                    <button
-                      type="button"
-                      onClick={() => flash("Video call started (demo)")}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-aheers-gold text-aheers-green-dark sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-2"
-                      aria-label="Video call"
-                      title="Video call"
-                    >
-                      <Video className="h-4 w-4" />
-                      <span className="hidden text-xs font-bold sm:inline">Video</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => flash("Audio call ringing (demo)")}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/85 hover:border-aheers-gold/40 sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-2"
-                      aria-label="Audio call"
-                    >
-                      <PhoneCall className="h-4 w-4" />
-                      <span className="hidden text-xs font-semibold sm:inline">Audio</span>
-                    </button>
-                    {peer?.phone && (
-                      <a
-                        href={`tel:${peer.phone.replace(/\s/g, "")}`}
-                        className="hidden h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/85 sm:inline-flex"
-                        aria-label="Phone"
-                      >
-                        <Phone className="h-4 w-4" />
-                      </a>
+                    {isLiveThread && activeLive && activeLive.status !== "ended" && (
+                      <>
+                        {activeLive.status === "waiting" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              claimSession(activeLive.id, agentName);
+                              flash("Joined as agent");
+                            }}
+                            className="rounded-full bg-aheers-gold px-3 py-2 text-[11px] font-bold text-aheers-green-dark"
+                          >
+                            Claim
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            endSession(activeLive.id, "agent");
+                            flash("Live chat ended");
+                            setActiveId(INITIAL_THREADS[0].id);
+                          }}
+                          className="rounded-full border border-white/15 px-3 py-2 text-[11px] font-semibold text-white/70"
+                        >
+                          End
+                        </button>
+                      </>
+                    )}
+                    {!isLiveThread && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => flash("Video call started (demo)")}
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-aheers-gold text-aheers-green-dark sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-2"
+                          aria-label="Video call"
+                          title="Video call"
+                        >
+                          <Video className="h-4 w-4" />
+                          <span className="hidden text-xs font-bold sm:inline">Video</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => flash("Audio call ringing (demo)")}
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/85 hover:border-aheers-gold/40 sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-2"
+                          aria-label="Audio call"
+                        >
+                          <PhoneCall className="h-4 w-4" />
+                          <span className="hidden text-xs font-semibold sm:inline">Audio</span>
+                        </button>
+                        {peer?.phone && (
+                          <a
+                            href={`tel:${peer.phone.replace(/\s/g, "")}`}
+                            className="hidden h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/85 sm:inline-flex"
+                            aria-label="Phone"
+                          >
+                            <Phone className="h-4 w-4" />
+                          </a>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
 
                 <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 md:px-6">
-                  <p className="text-center text-[11px] font-medium text-white/30">Thu, Jul 30</p>
-                  {active.messages.map((m) => (
-                    <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`w-fit max-w-[min(88%,20rem)] rounded-2xl px-3.5 py-2.5 sm:max-w-[min(70%,26rem)] ${
-                          m.mine
-                            ? "rounded-br-md bg-aheers-green text-white"
-                            : "rounded-bl-md bg-[#1a221e] text-white/90 ring-1 ring-white/5"
-                        }`}
-                      >
-                        {!m.mine && active.kind === "group" && (
-                          <p className="mb-0.5 text-[10px] font-semibold text-aheers-gold">
-                            {senderLabel(m.senderId)}
-                          </p>
-                        )}
-                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{m.text}</p>
+                  {isLiveThread && (
+                    <p className="text-center text-[11px] font-medium text-aheers-gold/70">
+                      Customer live chat from assistant · reply as agent
+                    </p>
+                  )}
+                  {!isLiveThread && (
+                    <p className="text-center text-[11px] font-medium text-white/30">Thu, Jul 30</p>
+                  )}
+                  {active.messages.map((m) => {
+                    if (m.senderId === "system") {
+                      return (
                         <p
-                          className={`mt-1 text-[10px] ${
-                            m.mine ? "text-right text-white/60" : "text-right text-white/35"
+                          key={m.id}
+                          className="mx-auto max-w-[90%] text-center text-[11px] font-medium text-white/35"
+                        >
+                          {m.text}
+                        </p>
+                      );
+                    }
+                    return (
+                      <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`w-fit max-w-[min(88%,20rem)] rounded-2xl px-3.5 py-2.5 sm:max-w-[min(70%,26rem)] ${
+                            m.mine
+                              ? "rounded-br-md bg-aheers-green text-white"
+                              : m.senderId === "assistant"
+                                ? "rounded-bl-md bg-[#1a221e]/80 text-white/55 ring-1 ring-white/5"
+                                : "rounded-bl-md bg-[#1a221e] text-white/90 ring-1 ring-white/5"
                           }`}
                         >
-                          {m.at}
-                        </p>
+                          {!m.mine && (active.kind === "group" || isLiveThread) && (
+                            <p className="mb-0.5 text-[10px] font-semibold text-aheers-gold">
+                              {m.senderId === "assistant"
+                                ? "Assistant"
+                                : m.senderId === "customer"
+                                  ? active.name
+                                  : senderLabel(m.senderId)}
+                            </p>
+                          )}
+                          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{m.text}</p>
+                          <p
+                            className={`mt-1 text-[10px] ${
+                              m.mine ? "text-right text-white/60" : "text-right text-white/35"
+                            }`}
+                          >
+                            {m.at}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <form
@@ -434,7 +611,7 @@ function TeamChatInner() {
                   <input
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
-                    placeholder="Type a message…"
+                    placeholder={isLiveThread ? "Reply as agent…" : "Type a message…"}
                     enterKeyHint="send"
                     style={{ backgroundColor: "#0b0f0d", color: "#fff" }}
                     className="min-h-11 min-w-0 flex-1 rounded-full border border-white/15 px-4 py-2.5 text-base text-white placeholder:text-white/35 outline-none [color-scheme:dark] focus:border-aheers-gold/40 sm:text-sm"

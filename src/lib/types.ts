@@ -28,7 +28,11 @@ export interface Product {
   id: string;
   storeSlug: StoreSlug;
   name: string;
+  /** Leaf category shown on cards (e.g. Fresh Fruit, Beef) */
   category: string;
+  /** Top-level aisle / department (supermarket hierarchy) */
+  department?: string;
+  subcategory?: string;
   price: number;
   memberPrice?: number;
   unit: string;
@@ -39,6 +43,7 @@ export interface Product {
   inStock: number;
   description: string;
   barcode?: string;
+  brand?: string;
 }
 
 export interface Customer {

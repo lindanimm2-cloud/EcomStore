@@ -11,8 +11,8 @@ const RECIPES = [
     blurb: "One-pan comfort with pantry staples from the supermarket aisle.",
     visual: "🍗",
     tone: "from-[#2a4a3a] via-[#3d6b4f] to-[#c9a227]/70",
-    uses: ["Fresh Chicken Whole", "Baby Potatoes", "All Gold Tomato Sauce"],
-    href: "/store/supermarket",
+    uses: ["Fresh Chicken Whole", "Baby Potatoes 1.5kg", "All Gold Tomato Sauce 700ml"],
+    href: "/store/supermarket/catalogue",
     store: "Supermarket",
   },
   {
@@ -23,7 +23,7 @@ const RECIPES = [
     visual: "🍳",
     tone: "from-[#0d4f48] via-[#00897b] to-[#4db6ac]/60",
     uses: ["Full English Breakfast", "Cappuccino Large"],
-    href: "/store/grabngo",
+    href: "/store/grabngo/catalogue",
     store: "Grab n Go",
   },
   {
@@ -33,8 +33,8 @@ const RECIPES = [
     blurb: "Fresh fruit and bread sides for a Greytown weekend fire.",
     visual: "🔥",
     tone: "from-[#1b3d2a] via-[#1b5e3b] to-[#5a7a3a]/50",
-    uses: ["Golden Delicious Apples", "Bananas", "White Bread Loaf"],
-    href: "/store/supermarket",
+    uses: ["Royal Gala Apples 1kg", "Bananas", "White Bread Loaf"],
+    href: "/store/supermarket/catalogue",
     store: "Supermarket",
   },
 ];
@@ -49,8 +49,8 @@ export default function RecipesPage() {
           title="Recipes"
           subtitle="Meal ideas linked to products available at Aheers — shop the ingredients in one tap."
           actions={
-            <Link href="/store/supermarket" className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-aheers-green-dark shadow-soft transition hover:bg-aheers-mist">
-              Shop supermarket
+            <Link href="/" className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-aheers-green-dark shadow-soft transition hover:bg-aheers-mist">
+              Shop ingredients
             </Link>
           }
         />

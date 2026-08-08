@@ -24,9 +24,9 @@ export const STORES: Store[] = [
     slug: "powertrade",
     name: "Aheers PowerTrade",
     shortName: "PowerTrade",
-    tagline: "Wholesale. Bulk. Delivered.",
+    tagline: "Bulk. Cases. Hybrid wholesale.",
     description:
-      "Cash & carry wholesale for traders and businesses. Bulk orders, trade accounts, tele-orders, and delivery to outlining areas.",
+      "Wholesale/hybrid cash & carry — triple-volume bulk packs for the public, stokvels and traders. Case pricing, trade accounts, tele-orders and delivery to outlying areas.",
     address: "93 Durban Street, Greytown, 3250",
     phone: "033 417 1049",
     accent: "powertrade-orange",
@@ -45,7 +45,7 @@ export const STORES: Store[] = [
     shortName: "Hardware",
     tagline: "Build it. Save on it.",
     description:
-      "Hardware, building materials, paint, electrical, plumbing, garden and tools — contractor pricing and project quotes available.",
+      "Electrical, hand tools, fasteners, plumbing, paint, adhesives, security, gardening, automotive and household hardware — contractor pricing and project quotes available.",
     address: "Greytown, KZN",
     phone: "033 413 1156",
     accent: "buildsave-slate",
@@ -64,7 +64,7 @@ export const STORES: Store[] = [
     shortName: "Foodworks",
     tagline: "Fresh food. Great value.",
     description:
-      "Fresh food, deli, bakery and ready meals — quality ingredients and daily specials across the Aheers food format.",
+      "Fruit & vegetables, meat & poultry, fish & seafood, dairy, bakery, pantry, snacks, frozen foods and beverages — your full grocery food department.",
     address: "93 Voortrekker Street, Greytown, 3250",
     phone: "033 413 1156",
     accent: "foodworks-red",
@@ -83,7 +83,7 @@ export const STORES: Store[] = [
     shortName: "Grab n Go",
     tagline: "Fresh. Fast. Ready in 10 min.",
     description:
-      "Hot meals, baked goods, coffee and deli favourites — order ahead, express pickup, or quick delivery.",
+      "Sandwiches, wraps, salads, ready meals, hot food, pizza, breakfast, desserts, fresh fruit and drinks — grab it and go.",
     address: "93 Voortrekker Street, Greytown, 3250",
     phone: "066 529 0079",
     accent: "grabngo-teal",

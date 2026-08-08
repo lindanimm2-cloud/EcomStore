@@ -16,9 +16,9 @@ export function PageSkeleton() {
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-10">
       <SkeletonBlock className="h-10 w-64" />
       <SkeletonBlock className="h-4 w-96 max-w-full" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <SkeletonBlock key={i} className="h-48" />
+          <SkeletonBlock key={i} className="h-56 sm:h-64" />
         ))}
       </div>
       <SkeletonBlock className="h-64 w-full" />

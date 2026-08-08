@@ -6,6 +6,10 @@ import { NotificationsProvider } from "@/lib/notifications-context";
 import { StoreSwitchModal } from "@/components/store-switch";
 import { ReportIssueButton } from "@/components/report-issue";
 import { FloatingHelpButtons } from "@/components/floating-help";
+import { GlobalCartBar } from "@/components/global-cart-bar";
+import { MobileStoreNav } from "@/components/mobile-store-nav";
+import { GlobalDepartmentDrawer } from "@/components/global-department-drawer";
+import { MiniCartDrawer } from "@/components/mini-cart-drawer";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -31,6 +35,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <NotificationsProvider>
             <CartProvider>
               {children}
+              <GlobalCartBar />
+              <MobileStoreNav />
+              <GlobalDepartmentDrawer />
+              <MiniCartDrawer />
               <StoreSwitchModal />
               <ReportIssueButton />
               <FloatingHelpButtons />
