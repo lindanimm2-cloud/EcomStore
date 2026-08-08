@@ -86,6 +86,11 @@ export function StoreSwitcher() {
           >
             <span className="hidden text-gray-400 sm:inline">Store</span>
             <span>{currentStore ? `${currentStore.icon} ${currentStore.shortName}` : "Choose store"}</span>
+            {currentStore && getCartCount(currentStore.slug) > 0 && (
+              <span className="rounded-full bg-aheers-gold px-1.5 py-0.5 text-[10px] font-bold text-aheers-green-dark">
+                {getCartCount(currentStore.slug)}
+              </span>
+            )}
             <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
           </button>
           {open && (
@@ -191,7 +196,8 @@ export function StoreSwitcher() {
 
 export function StoreHeader({ storeSlug }: { storeSlug: StoreSlug }) {
   const store = STORES.find((s) => s.slug === storeSlug)!;
-  const { itemCount, activeStore, setActiveStore } = useCart();
+  const { getCartCount, setActiveStore } = useCart();
+  const cartCount = getCartCount(storeSlug);
 
   return (
     <header className={`${store.accentBg} relative overflow-hidden text-white`}>
@@ -222,9 +228,9 @@ export function StoreHeader({ storeSlug }: { storeSlug: StoreSlug }) {
           >
             <ShoppingCart className="h-4 w-4" />
             <span className="hidden sm:inline">Cart</span>
-            {itemCount > 0 && activeStore === storeSlug && (
-              <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-aheers-gold text-[10px] font-bold text-aheers-green-dark">
-                {itemCount}
+            {cartCount > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-aheers-gold px-1 text-[10px] font-bold text-aheers-green-dark">
+                {cartCount}
               </span>
             )}
           </Link>

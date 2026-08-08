@@ -1,12 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-context";
 import { ShoppingBag, Plus, Minus } from "lucide-react";
 
 export function ProductCard({ product }: { product: Product }) {
-  const { addItem } = useCart();
+  const { getQty, addItem, updateQty } = useCart();
+  const qty = getQty(product.id, product.storeSlug);
   const displayPrice = product.memberPrice ?? product.bulkPrice ?? product.price;
+
+  function bump(delta: number) {
+    if (qty === 0 && delta > 0) {
+      addItem(product, 1);
+      return;
+    }
+    updateQty(product.id, qty + delta, product.storeSlug);
+  }
 
   return (
     <div className="card-hover group overflow-hidden">
@@ -17,21 +27,24 @@ export function ProductCard({ product }: { product: Product }) {
             {product.badge}
           </span>
         )}
+        {qty > 0 && (
+          <span className="absolute right-3 top-3 flex h-7 min-w-7 items-center justify-center rounded-full bg-aheers-green px-2 text-xs font-bold text-white shadow-soft">
+            {qty}
+          </span>
+        )}
       </div>
       <div className="p-4">
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-400">{product.category}</p>
         <h3 className="mt-1 font-semibold text-aheers-charcoal transition group-hover:text-aheers-green">{product.name}</h3>
         <p className="mt-1 line-clamp-2 text-sm text-gray-500">{product.description}</p>
         <div className="mt-4 flex items-end justify-between gap-2">
-          <div>
+          <div className="min-w-0">
             <p className="text-lg font-bold text-aheers-green-dark">
               R {displayPrice.toFixed(2)}
               <span className="text-sm font-normal text-gray-400"> {product.unit}</span>
             </p>
             {product.memberPrice && (
-              <p className="text-xs text-aheers-green">
-                Member · was R {product.price.toFixed(2)}
-              </p>
+              <p className="text-xs text-aheers-green">Member · was R {product.price.toFixed(2)}</p>
             )}
             {product.bulkPrice && product.minQty && !product.memberPrice && (
               <p className="text-xs text-powertrade-orange">
@@ -39,13 +52,37 @@ export function ProductCard({ product }: { product: Product }) {
               </p>
             )}
           </div>
-          <button
-            onClick={() => addItem(product)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-aheers-green text-white shadow-soft transition hover:bg-aheers-green-light hover:shadow-lift"
-            aria-label={`Add ${product.name}`}
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+
+          {qty === 0 ? (
+            <button
+              type="button"
+              onClick={() => bump(1)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-aheers-green text-white shadow-soft transition hover:bg-aheers-green-light hover:shadow-lift"
+              aria-label={`Add ${product.name}`}
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          ) : (
+            <div className="flex shrink-0 items-center gap-0.5 rounded-xl bg-aheers-green p-0.5 text-white shadow-soft">
+              <button
+                type="button"
+                onClick={() => bump(-1)}
+                className="flex h-9 w-9 items-center justify-center rounded-[0.65rem] hover:bg-white/15"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <span className="min-w-[1.75rem] text-center text-sm font-bold tabular-nums">{qty}</span>
+              <button
+                type="button"
+                onClick={() => bump(1)}
+                className="flex h-9 w-9 items-center justify-center rounded-[0.65rem] hover:bg-white/15"
+                aria-label="Increase quantity"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
         <p className="mt-2 text-xs text-gray-400">{product.inStock} in stock</p>
       </div>
@@ -110,6 +147,44 @@ export function EmptyState({ message, action }: { message: string; action?: Reac
       <ShoppingBag className="mb-4 h-12 w-12 text-aheers-green/30" />
       <p className="text-gray-500">{message}</p>
       {action && <div className="mt-4">{action}</div>}
+    </div>
+  );
+}
+
+/** Sticky cart summary — visible while shopping a store */
+export function StoreCartBar({ storeSlug }: { storeSlug: string }) {
+  const { getCartCount, total, activeStore, setActiveStore, items } = useCart();
+  const count = getCartCount(storeSlug as Parameters<typeof getCartCount>[0]);
+  if (count <= 0) return null;
+
+  // Prefer this store's total when it's active; otherwise estimate from stored cart isn't exported —
+  // ensure store is active when showing bar from store page (parent sets active).
+  const showTotal = activeStore === storeSlug ? total : null;
+  const lineCount = activeStore === storeSlug ? items.length : count;
+
+  return (
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:p-4">
+      <Link
+        href={`/store/${storeSlug}/cart`}
+        onClick={() => setActiveStore(storeSlug as Parameters<typeof setActiveStore>[0])}
+        className="pointer-events-auto mx-auto flex max-w-lg items-center justify-between gap-3 rounded-2xl bg-aheers-green-dark px-4 py-3.5 text-white shadow-lift ring-1 ring-white/10"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-aheers-green text-white">
+            <ShoppingBag className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">
+              {count} item{count === 1 ? "" : "s"} in cart
+              {lineCount !== count && activeStore === storeSlug ? ` · ${lineCount} lines` : ""}
+            </p>
+            <p className="text-xs text-white/60">Tap to view cart · checkout</p>
+          </div>
+        </div>
+        <span className="shrink-0 rounded-xl bg-aheers-gold px-3 py-2 text-sm font-bold text-aheers-green-dark">
+          {showTotal != null ? `R ${showTotal.toFixed(2)}` : "View"}
+        </span>
+      </Link>
     </div>
   );
 }

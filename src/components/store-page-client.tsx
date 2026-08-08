@@ -11,6 +11,7 @@ import { StoreSlug } from "@/lib/types";
 import { useCart } from "@/lib/cart-context";
 import { KitchenStatus } from "@/components/kitchen-status";
 import { HardwareServices } from "@/components/hardware-services";
+import { StoreCartBar } from "@/components/products";
 
 export function StorePageClient({ slug }: { slug: string }) {
   const searchParams = useSearchParams();
@@ -31,7 +32,7 @@ export function StorePageClient({ slug }: { slug: string }) {
     <>
       <StoreSwitcher />
       <StoreHeader storeSlug={store.slug as StoreSlug} />
-      <main className="page-shell py-8">
+      <main className="page-shell py-8 pb-28">
         <div className={`relative mb-8 overflow-hidden rounded-3xl ${store.accentBg} p-8 text-white shadow-lift md:p-10`}>
           <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
           <div className="relative">
@@ -64,6 +65,7 @@ export function StorePageClient({ slug }: { slug: string }) {
 
         <StoreSearch products={products} slug={store.shortName} category={category} />
       </main>
+      <StoreCartBar storeSlug={store.slug} />
       <SiteFooter />
     </>
   );

@@ -11,12 +11,13 @@ interface CartContextType {
   storeSlug: StoreSlug | null;
   activeStore: StoreSlug | null;
   addItem: (product: Product, qty?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQty: (productId: string, qty: number) => void;
+  removeItem: (productId: string, storeSlug?: StoreSlug) => void;
+  updateQty: (productId: string, qty: number, storeSlug?: StoreSlug) => void;
   clearCart: () => void;
   total: number;
   itemCount: number;
   getCartCount: (slug: StoreSlug) => number;
+  getQty: (productId: string, slug: StoreSlug) => number;
   hasCart: (slug: StoreSlug) => boolean;
   pendingStoreSwitch: StoreSlug | null;
   requestStoreSwitch: (slug: StoreSlug) => boolean;
@@ -103,36 +104,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const removeItem = useCallback((productId: string) => {
-    setActiveStoreState((slug) => {
-      if (!slug) return slug;
-      setCarts((prev) => {
-        const list = (prev[slug] ?? []).filter((i) => i.product.id !== productId);
-        const copy = { ...prev };
-        if (list.length === 0) delete copy[slug];
-        else copy[slug] = list;
-        return copy;
-      });
-      return slug;
+  const removeItem = useCallback((productId: string, storeSlug?: StoreSlug) => {
+    setCarts((prev) => {
+      const slug = storeSlug ?? activeStore;
+      if (!slug) return prev;
+      const list = (prev[slug] ?? []).filter((i) => i.product.id !== productId);
+      const copy = { ...prev };
+      if (list.length === 0) delete copy[slug];
+      else copy[slug] = list;
+      return copy;
     });
-  }, []);
+    if (storeSlug) setActiveStoreState(storeSlug);
+  }, [activeStore]);
 
-  const updateQty = useCallback((productId: string, qty: number) => {
-    if (qty <= 0) {
-      removeItem(productId);
-      return;
-    }
-    setActiveStoreState((slug) => {
-      if (!slug) return slug;
+  const updateQty = useCallback(
+    (productId: string, qty: number, storeSlug?: StoreSlug) => {
+      const slug = storeSlug ?? activeStore;
+      if (!slug) return;
+      if (qty <= 0) {
+        removeItem(productId, slug);
+        return;
+      }
+      setActiveStoreState(slug);
       setCarts((prev) => ({
         ...prev,
-        [slug]: (prev[slug] ?? []).map((i) =>
-          i.product.id === productId ? { ...i, qty } : i
-        ),
+        [slug]: (prev[slug] ?? []).map((i) => (i.product.id === productId ? { ...i, qty } : i)),
       }));
-      return slug;
-    });
-  }, [removeItem]);
+    },
+    [activeStore, removeItem]
+  );
 
   const clearCart = useCallback(() => {
     if (!activeStore) return;
@@ -184,6 +184,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [carts]
   );
 
+  const getQty = useCallback(
+    (productId: string, slug: StoreSlug) =>
+      (carts[slug] ?? []).find((i) => i.product.id === productId)?.qty ?? 0,
+    [carts]
+  );
+
   const hasCart = useCallback((slug: StoreSlug) => (carts[slug]?.length ?? 0) > 0, [carts]);
 
   return (
@@ -199,6 +205,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         total,
         itemCount,
         getCartCount,
+        getQty,
         hasCart,
         pendingStoreSwitch,
         requestStoreSwitch,
