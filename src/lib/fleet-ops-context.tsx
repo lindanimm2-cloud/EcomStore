@@ -136,7 +136,17 @@ interface FleetOpsContextType {
   assignDriver: (vehicleId: string, driverId: string | null) => void;
   assignUserBranch: (userId: string, branch: string) => void;
   assignUserRole: (userId: string, role: string) => void;
-  addUser: (data: { name: string; email: string; role: string; branch: string; phone?: string }) => void;
+  addUser: (data: {
+    name: string;
+    email: string;
+    role: string;
+    branch: string;
+    phone?: string;
+    status?: ManagedStaff["status"];
+    vehicleId?: string | null;
+  }) => string;
+  updateStaff: (id: string, patch: Partial<ManagedStaff>) => void;
+  removeStaff: (id: string) => void;
   getDriverName: (driverId: string | null) => string;
   getVehicleName: (vehicleId: string | null) => string;
 }
@@ -220,23 +230,52 @@ export function FleetOpsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addUser = useCallback(
-    (data: { name: string; email: string; role: string; branch: string; phone?: string }) => {
+    (data: {
+      name: string;
+      email: string;
+      role: string;
+      branch: string;
+      phone?: string;
+      status?: ManagedStaff["status"];
+      vehicleId?: string | null;
+    }) => {
+      const id = `s-${Date.now()}`;
+      const vehicleId = data.vehicleId ?? null;
       setStaff((prev) => [
         {
-          id: `s-${Date.now()}`,
+          id,
           name: data.name,
           email: data.email,
           role: data.role,
           branch: data.branch,
           phone: data.phone ?? "",
-          vehicleId: null,
-          status: "invited",
+          vehicleId,
+          status: data.status ?? "invited",
         },
         ...prev,
       ]);
+      if (vehicleId) {
+        setVehicles((prev) =>
+          prev.map((v) => {
+            if (v.id === vehicleId) return { ...v, driverId: id };
+            if (v.driverId === id) return { ...v, driverId: null };
+            return v;
+          })
+        );
+      }
+      return id;
     },
     []
   );
+
+  const updateStaff = useCallback((id: string, patch: Partial<ManagedStaff>) => {
+    setStaff((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  }, []);
+
+  const removeStaff = useCallback((id: string) => {
+    setStaff((prev) => prev.filter((s) => s.id !== id));
+    setVehicles((prev) => prev.map((v) => (v.driverId === id ? { ...v, driverId: null } : v)));
+  }, []);
 
   const getDriverName = useCallback(
     (driverId: string | null) => {
@@ -269,6 +308,8 @@ export function FleetOpsProvider({ children }: { children: ReactNode }) {
         assignUserBranch,
         assignUserRole,
         addUser,
+        updateStaff,
+        removeStaff,
         getDriverName,
         getVehicleName,
       }}

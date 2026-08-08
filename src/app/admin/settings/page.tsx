@@ -51,7 +51,7 @@ const NAV: { id: Tab; label: string; icon: typeof User }[] = [
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">
+    <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green lg:text-[#a89060]">
       {children}
     </span>
   );
@@ -61,12 +61,12 @@ function DarkInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-lg border border-white/10 bg-[#14181f] px-3.5 py-2.5 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-aheers-gold/50 ${props.className ?? ""}`}
+      className={`w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-aheers-charcoal outline-none transition placeholder:text-gray-400 focus:border-aheers-green focus:ring-2 focus:ring-aheers-green/15 lg:rounded-lg lg:border-white/10 lg:bg-[#14181f] lg:text-white lg:placeholder:text-white/25 lg:focus:border-aheers-gold/50 lg:focus:ring-0 ${props.className ?? ""}`}
     />
   );
 }
 
-/** Gold checkbox card — state always reflects checked visually */
+/** Checkbox card — light on mobile, gold/dark on desktop */
 function CheckCard({
   checked,
   onChange,
@@ -84,22 +84,24 @@ function CheckCard({
       role="checkbox"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`flex w-full items-start gap-3 rounded-lg border px-4 py-3.5 text-left transition ${
-        checked ? "border-aheers-gold/35 bg-aheers-gold/5" : "border-white/10 bg-transparent hover:border-white/20"
+      className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3.5 text-left transition lg:rounded-lg ${
+        checked
+          ? "border-aheers-green/25 bg-aheers-green/[0.06] lg:border-aheers-gold/35 lg:bg-aheers-gold/5"
+          : "border-gray-100 bg-white lg:border-white/10 lg:bg-transparent lg:hover:border-white/20"
       }`}
     >
       <span
         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition ${
           checked
-            ? "border-aheers-gold bg-aheers-gold text-aheers-green-dark"
-            : "border-white/25 bg-transparent text-transparent"
+            ? "border-aheers-green bg-aheers-green text-white lg:border-aheers-gold lg:bg-aheers-gold lg:text-aheers-green-dark"
+            : "border-gray-300 bg-white text-transparent lg:border-white/25 lg:bg-transparent"
         }`}
       >
         <Check className="h-3.5 w-3.5" strokeWidth={3} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold text-white">{label}</span>
-        {hint && <span className="mt-0.5 block text-xs text-white/40">{hint}</span>}
+        <span className="block text-sm font-semibold text-aheers-charcoal lg:text-white">{label}</span>
+        {hint && <span className="mt-0.5 block text-xs text-gray-500 lg:text-white/40">{hint}</span>}
       </span>
     </button>
   );
@@ -107,10 +109,36 @@ function CheckCard({
 
 function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="mb-6">
-      <h2 className="font-display text-3xl font-semibold tracking-tight text-white">{title}</h2>
-      {subtitle && <p className="mt-1 text-sm text-white/40">{subtitle}</p>}
+    <div className="mb-5 lg:mb-6">
+      <h2 className="font-display text-xl font-semibold tracking-tight text-aheers-green-dark lg:text-3xl lg:text-white">
+        {title}
+      </h2>
+      {subtitle && <p className="mt-1 text-sm text-gray-500 lg:text-white/40">{subtitle}</p>}
     </div>
+  );
+}
+
+function SaveBtn({
+  children,
+  onClick,
+  primary,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  primary?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        primary
+          ? "mt-6 w-full rounded-xl bg-aheers-green px-6 py-3 text-sm font-bold text-white shadow-soft lg:mt-8 lg:w-auto lg:rounded-lg lg:bg-aheers-gold lg:text-aheers-green-dark lg:hover:bg-[#d4b03a]"
+          : "mt-6 w-full rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-aheers-charcoal lg:mt-8 lg:w-auto lg:border-white/20 lg:bg-transparent lg:text-white lg:hover:border-aheers-gold/50 lg:hover:text-aheers-gold"
+      }
+    >
+      {children}
+    </button>
   );
 }
 
@@ -142,6 +170,15 @@ export default function SettingsPage() {
   const [maxStops, setMaxStops] = useState(18);
   const [reorderDays, setReorderDays] = useState(7);
   const [saved, setSaved] = useState("");
+  const [desktop, setDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setDesktop(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     try {
@@ -240,19 +277,47 @@ export default function SettingsPage() {
   }
 
   const field = "space-y-1.5";
+  const sectionEyebrow =
+    "mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green lg:mb-4 lg:text-[#a89060]";
 
   return (
-    <div className="flex min-h-screen bg-[#0b0c0e]">
+    <div className="flex min-h-screen bg-[#f7f8f9] lg:bg-[#0b0c0e]">
       <AdminSidebar />
-      <div className="flex min-h-screen flex-1 flex-col pt-14 text-white">
-        <div className="px-4 pb-2 md:px-8">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-aheers-gold/80">Aheers Ops</p>
-          <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">Settings</h1>
+      <div className="admin-main flex min-h-screen flex-1 flex-col text-aheers-charcoal lg:bg-transparent lg:pt-0 lg:text-white">
+        {/* Desktop title only — mobile uses top ops bar */}
+        <div className="hidden px-8 pb-2 pt-6 lg:block">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-aheers-gold/80">Aheers App</p>
+          <h1 className="font-display text-4xl font-semibold tracking-tight">Settings</h1>
         </div>
 
-        <div className="mx-4 mb-6 flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-white/10 bg-[#0f1218] md:mx-8">
-          {/* Left nav */}
-          <aside className="hidden w-52 shrink-0 flex-col border-r border-white/8 p-4 sm:flex">
+        {/* Mobile section picker */}
+        <div className="space-y-3 px-4 pb-2 pt-1 lg:hidden">
+          <PrettySelect
+            label="Section"
+            value={tab}
+            onChange={(v) => setTab(v as Tab)}
+            options={NAV.map((n) => ({ value: n.id, label: n.label }))}
+          />
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { href: "/admin/settings/users", label: "Users" },
+              { href: "/admin/settings/drivers", label: "Drivers" },
+              { href: "/admin/settings/vehicles", label: "Vehicles" },
+            ].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="rounded-2xl border border-gray-100 bg-white px-2 py-2.5 text-center text-xs font-semibold text-aheers-green shadow-[0_6px_20px_rgba(13,61,38,0.04)]"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="mx-4 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.25rem] border border-gray-100 bg-white shadow-[0_6px_20px_rgba(13,61,38,0.04)] lg:mx-8 lg:flex-row lg:rounded-2xl lg:border-white/10 lg:bg-[#0f1218] lg:shadow-none">
+          {/* Left nav — desktop */}
+          <aside className="hidden w-52 shrink-0 flex-col border-r border-white/8 p-4 lg:flex">
             <p className="mb-3 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/30">Settings</p>
             <nav className="space-y-0.5">
               {NAV.map(({ id, label, icon: Icon }) => {
@@ -290,31 +355,11 @@ export default function SettingsPage() {
             </div>
           </aside>
 
-          {/* Mobile tab strip */}
-          <div className="flex w-full flex-col sm:hidden">
-            <div className="flex gap-1 overflow-x-auto border-b border-white/8 p-2">
-              {NAV.map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setTab(id)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium ${
-                    tab === id ? "bg-aheers-gold text-aheers-green-dark" : "bg-white/5 text-white/60"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex-1 overflow-y-auto p-5">{renderTab()}</div>
-          </div>
-
-          {/* Desktop content */}
-          <div className="hidden min-w-0 flex-1 overflow-y-auto p-6 md:p-8 sm:block">{renderTab()}</div>
+          <div className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-5 lg:p-8">{renderTab()}</div>
         </div>
 
         {saved && (
-          <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-aheers-gold px-4 py-2 text-sm font-semibold text-aheers-green-dark shadow-lift">
+          <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-aheers-green px-4 py-2 text-sm font-semibold text-white shadow-lift lg:bottom-6 lg:bg-aheers-gold lg:text-aheers-green-dark">
             {saved}
           </div>
         )}
@@ -327,14 +372,14 @@ export default function SettingsPage() {
       return (
         <div>
           <SectionTitle title="Your profile" subtitle={profile.email} />
-          <div className="mb-6 flex flex-wrap items-center gap-5">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#1a1f28] text-2xl font-bold text-aheers-gold ring-2 ring-aheers-gold/30 shadow-[0_0_24px_rgba(201,162,39,0.25)]">
+          <div className="mb-5 flex flex-wrap items-center gap-4 lg:mb-6 lg:gap-5">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-aheers-green/10 text-xl font-bold text-aheers-green ring-2 ring-aheers-green/20 lg:h-24 lg:w-24 lg:bg-[#1a1f28] lg:text-2xl lg:text-aheers-gold lg:ring-aheers-gold/30 lg:shadow-[0_0_24px_rgba(201,162,39,0.25)]">
               {profile.initials}
             </div>
             <button
               type="button"
               onClick={() => flash("Photo upload (demo)")}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3.5 py-2 text-sm text-white/80 transition hover:border-aheers-gold/40 hover:text-aheers-gold"
+              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-aheers-charcoal lg:rounded-lg lg:border-white/15 lg:bg-transparent lg:text-white/80 lg:hover:border-aheers-gold/40 lg:hover:text-aheers-gold"
             >
               <Camera className="h-4 w-4" /> Add photo
             </button>
@@ -342,7 +387,7 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => flash("Public profile (demo)")}
-            className="mb-6 text-sm font-medium text-aheers-gold hover:underline"
+            className="mb-5 text-sm font-medium text-aheers-green lg:mb-6 lg:text-aheers-gold lg:hover:underline"
           >
             View public team profile →
           </button>
@@ -372,13 +417,9 @@ export default function SettingsPage() {
               <DarkInput value={profile.email} onChange={(e) => patchProfile("email", e.target.value)} />
             </label>
           </div>
-          <button
-            type="button"
-            onClick={() => saveAll("Profile saved")}
-            className="mt-8 rounded-lg bg-aheers-gold px-6 py-3 text-sm font-bold text-aheers-green-dark transition hover:bg-[#d4b03a]"
-          >
+          <SaveBtn primary onClick={() => saveAll("Profile saved")}>
             Save profile
-          </button>
+          </SaveBtn>
         </div>
       );
     }
@@ -387,7 +428,7 @@ export default function SettingsPage() {
       return (
         <div>
           <SectionTitle title="Notifications" subtitle="Channels for orders, stock and Aheers App alerts" />
-          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">Alert channels</p>
+          <p className={sectionEyebrow}>Alert channels</p>
           <div className="space-y-2">
             {(
               [
@@ -409,13 +450,7 @@ export default function SettingsPage() {
               />
             ))}
           </div>
-          <button
-            type="button"
-            onClick={() => saveAll("Notification prefs saved")}
-            className="mt-8 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-aheers-gold/50 hover:text-aheers-gold"
-          >
-            Save notification options
-          </button>
+          <SaveBtn onClick={() => saveAll("Notification prefs saved")}>Save notification options</SaveBtn>
         </div>
       );
     }
@@ -434,11 +469,11 @@ export default function SettingsPage() {
               onChange={(e) => patchSecurity("sessionTimeoutMin", Number(e.target.value))}
               className="max-w-xs"
             />
-            <p className="mt-2 text-xs text-white/40">
+            <p className="mt-2 text-xs text-gray-500 lg:text-white/40">
               Auto sign-out after this many minutes of no activity (all portals). Default 15.
             </p>
           </div>
-          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">Protections</p>
+          <p className={sectionEyebrow}>Protections</p>
           <div className="space-y-2">
             <CheckCard
               checked={security.twoFactor}
@@ -459,13 +494,7 @@ export default function SettingsPage() {
               hint="Email when a new device signs in"
             />
           </div>
-          <button
-            type="button"
-            onClick={() => saveAll("Security settings saved")}
-            className="mt-8 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-aheers-gold/50 hover:text-aheers-gold"
-          >
-            Save security options
-          </button>
+          <SaveBtn onClick={() => saveAll("Security settings saved")}>Save security options</SaveBtn>
         </div>
       );
     }
@@ -484,11 +513,13 @@ export default function SettingsPage() {
               <Link
                 key={c.href}
                 href={c.href}
-                className="group rounded-xl border border-white/10 bg-[#14181f] p-5 transition hover:border-aheers-gold/40"
+                className="group rounded-2xl border border-gray-100 bg-[#f7f8f9] p-4 transition hover:border-aheers-green/20 lg:rounded-xl lg:border-white/10 lg:bg-[#14181f] lg:hover:border-aheers-gold/40"
               >
-                <p className="font-semibold text-white group-hover:text-aheers-gold">{c.title}</p>
-                <p className="mt-1 text-xs text-white/40">{c.desc}</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs text-aheers-gold">
+                <p className="font-semibold text-aheers-charcoal group-hover:text-aheers-green lg:text-white lg:group-hover:text-aheers-gold">
+                  {c.title}
+                </p>
+                <p className="mt-1 text-xs text-gray-500 lg:text-white/40">{c.desc}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-aheers-green lg:text-aheers-gold">
                   Open <ExternalLink className="h-3 w-3" />
                 </span>
               </Link>
@@ -525,13 +556,9 @@ export default function SettingsPage() {
               <DarkInput value={org.address} onChange={(e) => patchOrg("address", e.target.value)} />
             </label>
           </div>
-          <button
-            type="button"
-            onClick={() => saveAll("Firm profile saved")}
-            className="mt-8 rounded-lg bg-aheers-gold px-6 py-3 text-sm font-bold text-aheers-green-dark transition hover:bg-[#d4b03a]"
-          >
+          <SaveBtn primary onClick={() => saveAll("Firm profile saved")}>
             Save firm
-          </button>
+          </SaveBtn>
         </div>
       );
     }
@@ -540,12 +567,10 @@ export default function SettingsPage() {
       return (
         <div>
           <SectionTitle title="Display" subtitle="Calendar and Aheers App workspace preferences" />
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">
-            Preferred calendar view
-          </p>
+          <p className={sectionEyebrow}>Preferred calendar view</p>
           <div className="mb-8 max-w-xs">
             <PrettySelect
-              dark
+              dark={desktop}
               value={display.calendarView}
               onChange={(v) => patchDisplay("calendarView", v as DisplaySettings["calendarView"])}
               options={[
@@ -556,7 +581,7 @@ export default function SettingsPage() {
               ]}
             />
           </div>
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a89060]">Workspace</p>
+          <p className={sectionEyebrow}>Workspace</p>
           <div className="space-y-2">
             <CheckCard
               checked={display.compactSidebar}
@@ -583,18 +608,12 @@ export default function SettingsPage() {
               hint="Show the floating Lens bar when Ops Hub loads."
             />
           </div>
-          <p className="mt-4 text-xs text-white/35">
-            Active view: <span className="text-aheers-gold">{display.calendarView}</span>
+          <p className="mt-4 text-xs text-gray-500 lg:text-white/35">
+            Active view: <span className="font-semibold text-aheers-green lg:text-aheers-gold">{display.calendarView}</span>
             {display.compactSidebar ? " · compact sidebar on" : ""}
             {display.denserTables ? " · dense tables on" : ""}
           </p>
-          <button
-            type="button"
-            onClick={() => saveAll("Display options saved")}
-            className="mt-8 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-aheers-gold/50 hover:text-aheers-gold"
-          >
-            Save display options
-          </button>
+          <SaveBtn onClick={() => saveAll("Display options saved")}>Save display options</SaveBtn>
         </div>
       );
     }
@@ -619,8 +638,8 @@ export default function SettingsPage() {
               onClick={() => setModuleTab(id)}
               className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                 moduleTab === id
-                  ? "bg-aheers-gold text-aheers-green-dark"
-                  : "bg-white/5 text-white/55 hover:bg-white/10 hover:text-white"
+                  ? "bg-aheers-green text-white lg:bg-aheers-gold lg:text-aheers-green-dark"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 lg:bg-white/5 lg:text-white/55 lg:hover:bg-white/10 lg:hover:text-white"
               }`}
             >
               {label}
@@ -631,9 +650,9 @@ export default function SettingsPage() {
         {moduleTab === "stores" && (
           <div className="space-y-3">
             {stores.map((s) => (
-              <div key={s.id} className="rounded-xl border border-white/10 bg-[#14181f] p-4">
+              <div key={s.id} className="rounded-2xl border border-gray-100 bg-[#f7f8f9] p-4 lg:rounded-xl lg:border-white/10 lg:bg-[#14181f]">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="font-semibold text-white">{s.name}</h3>
+                  <h3 className="font-semibold text-aheers-charcoal lg:text-white">{s.name}</h3>
                   <button
                     type="button"
                     role="checkbox"
@@ -645,13 +664,15 @@ export default function SettingsPage() {
                     }}
                     className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                       s.enabled
-                        ? "bg-aheers-gold/20 text-aheers-gold ring-1 ring-aheers-gold/40"
-                        : "bg-white/5 text-white/40 ring-1 ring-white/10"
+                        ? "bg-aheers-green/10 text-aheers-green ring-1 ring-aheers-green/25 lg:bg-aheers-gold/20 lg:text-aheers-gold lg:ring-aheers-gold/40"
+                        : "bg-white text-gray-400 ring-1 ring-gray-200 lg:bg-white/5 lg:text-white/40 lg:ring-white/10"
                     }`}
                   >
                     <span
                       className={`flex h-4 w-4 items-center justify-center rounded border ${
-                        s.enabled ? "border-aheers-gold bg-aheers-gold text-aheers-green-dark" : "border-white/25"
+                        s.enabled
+                          ? "border-aheers-green bg-aheers-green text-white lg:border-aheers-gold lg:bg-aheers-gold lg:text-aheers-green-dark"
+                          : "border-gray-300 lg:border-white/25"
                       }`}
                     >
                       {s.enabled && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
@@ -795,14 +816,10 @@ export default function SettingsPage() {
           </div>
         )}
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => saveAll("Module settings saved")}
-            className="rounded-lg bg-aheers-gold px-6 py-3 text-sm font-bold text-aheers-green-dark transition hover:bg-[#d4b03a]"
-          >
+        <div className="mt-6 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
+          <SaveBtn primary onClick={() => saveAll("Module settings saved")}>
             Save modules
-          </button>
+          </SaveBtn>
           <button
             type="button"
             onClick={() => {
@@ -816,7 +833,7 @@ export default function SettingsPage() {
               localStorage.removeItem(SETTINGS_STORAGE_KEY);
               flash("Reset to defaults");
             }}
-            className="rounded-lg border border-white/15 px-5 py-3 text-sm text-white/60 hover:border-white/30 hover:text-white"
+            className="w-full rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-600 sm:w-auto lg:rounded-lg lg:border-white/15 lg:bg-transparent lg:text-white/60 lg:hover:border-white/30 lg:hover:text-white"
           >
             Reset defaults
           </button>
