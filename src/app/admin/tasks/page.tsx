@@ -1,17 +1,19 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminHeader, StatusBadge } from "@/components/admin-ui";
-import { CRM_TASKS, CrmTask, TaskPriority, TaskStatus } from "@/lib/crm-activity";
+import { CrmTask, TaskPriority, TaskStatus } from "@/lib/crm-activity";
+import { addTask, setTaskStatus, subscribeTasks } from "@/lib/task-store";
 import { PrettySelect } from "@/components/pretty-select";
 import { Plus } from "lucide-react";
 
 const COLUMNS: { key: TaskStatus; title: string }[] = [
   { key: "todo", title: "To do" },
   { key: "in_progress", title: "In progress" },
+  { key: "waiting", title: "Waiting" },
   { key: "overdue", title: "Overdue" },
-  { key: "done", title: "Done" },
+  { key: "done", title: "Completed" },
 ];
 
 const PRIORITY_OPTS = [
@@ -31,15 +33,18 @@ const CATEGORY_OPTS = [
 ];
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState(CRM_TASKS);
+  const [tasks, setTasks] = useState<CrmTask[]>([]);
   const [view, setView] = useState<"board" | "list">("board");
   const [showAdd, setShowAdd] = useState(false);
   const [mobileCol, setMobileCol] = useState<TaskStatus | "all">("all");
+
+  useEffect(() => subscribeTasks(setTasks), []);
 
   const byStatus = useMemo(() => {
     const map: Record<TaskStatus, CrmTask[]> = {
       todo: [],
       in_progress: [],
+      waiting: [],
       overdue: [],
       done: [],
     };
@@ -48,24 +53,21 @@ export default function TasksPage() {
   }, [tasks]);
 
   function setStatus(id: string, status: TaskStatus) {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+    setTaskStatus(id, status);
   }
 
   function onAdd(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const neu: CrmTask = {
-      id: `TSK-${Date.now().toString().slice(-4)}`,
+    addTask({
       title: String(fd.get("title")),
       description: String(fd.get("description") || ""),
-      status: "todo",
       priority: String(fd.get("priority")) as TaskPriority,
       dueDate: String(fd.get("dueDate")),
       owner: String(fd.get("owner")),
       relatedTo: String(fd.get("relatedTo") || "—"),
       category: String(fd.get("category")) as CrmTask["category"],
-    };
-    setTasks((prev) => [neu, ...prev]);
+    });
     setShowAdd(false);
   }
 

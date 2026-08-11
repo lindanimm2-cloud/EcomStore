@@ -93,7 +93,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
 ];
 
 function mobilePageTitle(pathname: string) {
-  if (pathname === "/admin") return "Overview";
+  if (pathname === "/admin") return "My day";
   if (pathname.startsWith("/admin/orders")) return "Orders";
   if (pathname.startsWith("/admin/customers")) return "Customers";
   if (pathname.startsWith("/admin/leads")) return "Leads";
@@ -245,7 +245,7 @@ export function AdminSidebar() {
 
   const mobileChrome = (
     <>
-      <div className="fixed left-0 right-0 top-0 z-40 flex items-center gap-3 border-b border-gray-100 bg-white px-3 py-2.5 text-aheers-charcoal lg:hidden">
+      <div className="fixed left-0 right-0 top-0 z-40 flex items-center gap-3 border-b border-gray-100 bg-white px-3 pb-2.5 pt-[calc(0.6rem+env(safe-area-inset-top))] text-aheers-charcoal lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}

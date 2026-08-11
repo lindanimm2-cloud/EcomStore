@@ -173,10 +173,7 @@ export function buildCatchUpReply(snap: OpsSnapshot, sinceIso?: string): OpsRepl
 }
 
 export function buildFarewellReply(snap: OpsSnapshot): string {
-  const name = firstName(snap.actor.name);
-  const n = attentionItems(snap).length;
-  if (!n) return `See you later, ${name}.`;
-  return `See you later, ${name}. There are ${n} unresolved operational issue${n === 1 ? "" : "s"} waiting for your attention.`;
+  return `Signing you out, ${firstName(snap.actor.name)}.`;
 }
 
 function happeningReply(snap: OpsSnapshot): OpsReply {

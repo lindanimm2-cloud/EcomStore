@@ -2,7 +2,7 @@ export type MeetingType = "call" | "in-person" | "video" | "site-visit";
 export type MeetingStatus = "scheduled" | "completed" | "cancelled";
 
 export type TaskPriority = "low" | "medium" | "high";
-export type TaskStatus = "todo" | "in_progress" | "done" | "overdue";
+export type TaskStatus = "todo" | "in_progress" | "waiting" | "done" | "overdue";
 
 export interface CrmMeeting {
   id: string;

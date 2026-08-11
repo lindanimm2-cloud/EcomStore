@@ -8,6 +8,7 @@ import {
   type NotificationPriority,
 } from "@/lib/notifications-context";
 import { DEFAULT_DISPLAY, SETTINGS_STORAGE_KEY, type DisplaySettings } from "@/lib/settings-data";
+import { wasAnnounced, markAnnounced } from "@/lib/lens-announce";
 
 export type BriefingBucket = "Now" | "Today" | "Upcoming" | "Recent";
 
@@ -80,6 +81,22 @@ export function panelTitle(panel: string | null): string | null {
 export function idleStatusLine() {
   const i = Math.floor(Date.now() / 120_000) % IDLE_LINES.length;
   return IDLE_LINES[i];
+}
+
+/** Level-2 passive status — never a greeting. */
+export function lensPassiveLine(pathname: string): string {
+  if (pathname === "/admin" || pathname === "/admin/") return "3 need attention";
+  if (pathname.startsWith("/admin/tasks")) return "4 overdue · oldest 3 days";
+  if (pathname.startsWith("/admin/orders")) return "One order needs a chase today";
+  if (pathname.startsWith("/admin/customers")) return "2 clients waiting for a reply";
+  if (pathname.startsWith("/admin/leads")) return "1 lead waiting";
+  if (pathname.startsWith("/admin/tickets")) return "2 tickets still open";
+  if (pathname.startsWith("/admin/calendar") || pathname.startsWith("/admin/meetings")) {
+    return "Next appointment is on the diary";
+  }
+  if (pathname.startsWith("/admin/inventory")) return "2 documents / stock lines to review";
+  if (pathname.startsWith("/admin/fleet")) return "1 delivery flagged late";
+  return idleStatusLine();
 }
 
 export function buildBriefingItems(notes: AppNotification[]): Record<BriefingBucket, BriefingItem[]> {
@@ -253,8 +270,9 @@ export function speakNotice(n: AppNotification, settings: DisplaySettings) {
   const urgentPlus = rank >= PRIORITY_RANK.urgent;
   const highAuto = rank >= PRIORITY_RANK.high && settings.lensAutoSpeak;
   if (!urgentPlus && !highAuto) return;
-  if (spokenIds().has(n.eventId)) return;
+  if (spokenIds().has(n.eventId) || wasAnnounced(n.eventId)) return;
   rememberSpoken(n.eventId);
+  markAnnounced({ eventId: n.eventId, userId: "staff", type: "speak", entityId: n.entityId });
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(`${n.title}. ${n.body}`);
   utter.rate = 1.02;

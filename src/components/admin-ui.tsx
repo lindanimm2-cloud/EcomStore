@@ -141,6 +141,8 @@ export function StatusBadge({ status }: { status: string }) {
     retail: "bg-aheers-mist text-aheers-green-dark",
     trade: "bg-orange-100 text-orange-700",
     todo: "bg-gray-100 text-gray-700",
+    waiting: "bg-amber-50 text-amber-800",
+    contacted: "bg-aheers-mist text-aheers-green-dark",
     overdue: "bg-red-50 text-red-700",
     done: "bg-green-100 text-green-700",
     call: "bg-aheers-mist text-aheers-green-dark",

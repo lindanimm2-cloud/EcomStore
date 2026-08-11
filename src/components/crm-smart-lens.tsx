@@ -54,6 +54,7 @@ import {
   buildBriefingItems,
   defaultLensPos,
   idleStatusLine,
+  lensPassiveLine,
   panelTitle,
   pickTalkNotice,
   readLensDisplay,
@@ -63,6 +64,7 @@ import {
   talkTone,
   type BriefingBucket,
 } from "@/lib/smart-lens";
+import { markAnnounced } from "@/lib/lens-announce";
 import { DEFAULT_DISPLAY, type DisplaySettings } from "@/lib/settings-data";
 
 type Panel = "lens" | "chat" | "live" | "notify" | "search" | "calls" | null;
@@ -100,6 +102,15 @@ export function CrmSmartLens() {
   const [lensMessages, setLensMessages] = useState<LensChatMsg[]>([]);
   const [lensDraft, setLensDraft] = useState("");
   const [lensThinking, setLensThinking] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     return subscribeLiveSupport((sessions) => {
@@ -288,10 +299,16 @@ export function CrmSmartLens() {
   const noteSig = staffNotes.map((n) => n.eventId).join("|");
 
   useEffect(() => {
-    if (!talkId || panel) return;
+    if (!talkId || panel || !talkCandidate) return;
+    markAnnounced({
+      eventId: talkCandidate.eventId,
+      userId: user?.id ?? "staff",
+      type: "toast",
+      entityId: talkCandidate.entityId,
+    });
     const t = window.setTimeout(() => markSeen([talkId]), 8000);
     return () => window.clearTimeout(t);
-  }, [talkId, panel, markSeen]);
+  }, [talkId, panel, markSeen, talkCandidate, user?.id]);
 
   useEffect(() => {
     for (const n of staffNotes) {
@@ -302,6 +319,7 @@ export function CrmSmartLens() {
   }, [noteSig, display]);
 
   if (!pathname.startsWith("/admin") || !enabled) return null;
+  if (isMobile && pathname.startsWith("/admin/chat")) return null;
 
   const firstName = user?.name?.split(" ")[0] ?? "Staff";
   const talkNotice = panel ? null : pickTalkNotice(staffNotes, display);
@@ -309,7 +327,7 @@ export function CrmSmartLens() {
   const briefingEmpty = BUCKETS.every((b) => briefing[b].length === 0);
   const searchGroups = searchCrm(searchQ);
   const status =
-    panelTitle(panel) ?? talkNotice?.title ?? roomName(pathname) ?? idleStatusLine();
+    panelTitle(panel) ?? talkNotice?.title ?? lensPassiveLine(pathname) ?? idleStatusLine();
   const bubbleTone = talkNotice ? talkTone(talkNotice.priority) : "default";
   const narrow = typeof window !== "undefined" && window.innerWidth < 768;
   const bubbleSide = !narrow && typeof window !== "undefined" && pos.x > window.innerWidth * 0.45 ? "left" : "right";
@@ -319,6 +337,7 @@ export function CrmSmartLens() {
   }
 
   function beginDrag(clientX: number, clientY: number) {
+    if (isMobile) return;
     dragMoved.current = false;
     dragOffset.current = { x: clientX - pos.x, y: clientY - pos.y };
     setDragging(true);
@@ -362,8 +381,12 @@ export function CrmSmartLens() {
   return (
     <div
       ref={rootRef}
-      className="fixed z-[55] max-w-[calc(100vw-16px)]"
-      style={{ left: pos.x, top: pos.y }}
+      className={`fixed z-[45] max-w-[calc(100vw-16px)] ${isMobile ? "left-3 right-3 w-auto max-w-none" : ""}`}
+      style={
+        isMobile
+          ? { top: "calc(3.5rem + env(safe-area-inset-top) + 6px)", left: 12, right: 12 }
+          : { left: pos.x, top: pos.y }
+      }
     >
       {talkNotice && (
         <button
@@ -412,7 +435,7 @@ export function CrmSmartLens() {
         <button
           type="button"
           aria-label="Drag Smart Lens"
-          className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center rounded-full text-aheers-gold/40 hover:bg-white/5 hover:text-aheers-gold/80 active:cursor-grabbing sm:h-9 sm:w-7"
+          className={`${isMobile ? "hidden" : "flex"} h-8 w-6 shrink-0 cursor-grab items-center justify-center rounded-full text-aheers-gold/40 hover:bg-white/5 hover:text-aheers-gold/80 active:cursor-grabbing sm:h-9 sm:w-7`}
           onMouseDown={(e) => {
             e.preventDefault();
             beginDrag(e.clientX, e.clientY);

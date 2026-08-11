@@ -24,9 +24,8 @@ import {
   Clock,
   ArrowRight,
   Truck,
-  Search,
-  ShoppingBag,
 } from "lucide-react";
+import { OpsCockpit } from "@/components/ops-cockpit";
 
 const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const TODAY = "2026-08-05";
@@ -49,7 +48,6 @@ function monthMatrix(year: number, month: number) {
 export default function AdminDashboard() {
   const [cursor, setCursor] = useState(() => new Date(2026, 7, 1));
   const [selected, setSelected] = useState(TODAY);
-  const [q, setQ] = useState("");
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
@@ -60,9 +58,7 @@ export default function AdminDashboard() {
   const dayTasks = tasksDueOnDate(selected, CRM_TASKS);
   const upcomingMeetings = CRM_MEETINGS.filter((m) => m.status === "scheduled").slice(0, 4);
   const openTasks = CRM_TASKS.filter((t) => t.status !== "done").slice(0, 5);
-  const activeOrders = ORDERS.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
   const activeFleet = FLEET_VEHICLES.filter((v) => v.status !== "idle");
-  const targetPct = Math.min(100, Math.round((activeOrders.length / Math.max(ORDERS.length, 1)) * 100) || 82);
 
   return (
     <div className="flex min-h-screen">
@@ -74,24 +70,9 @@ export default function AdminDashboard() {
         />
 
         <div className="admin-page space-y-5">
-          {/* Mobile search — ADOL-style */}
-          <div className="relative lg:hidden">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search customers, orders, tasks…"
-              className="mobile-search"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && q.trim()) {
-                  window.location.href = `/admin/customers`;
-                }
-              }}
-            />
-          </div>
+          <OpsCockpit />
 
-          {/* KPI grid — ADOL layout */}
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
+          <div className="hidden gap-3 xl:grid xl:grid-cols-4 xl:gap-4">
             <StatCard
               label="Active customers"
               value={String(CUSTOMERS.length)}
@@ -126,138 +107,6 @@ export default function AdminDashboard() {
             />
           </div>
 
-          {/* Overview bars — mobile */}
-          <section className="mobile-stat xl:hidden">
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Overview</h2>
-              <div className="flex rounded-full bg-[#f3f5f4] p-0.5 text-[11px] font-semibold">
-                <span className="rounded-full px-2.5 py-1 text-gray-400">Today</span>
-                <span className="rounded-full bg-aheers-green px-2.5 py-1 text-white">Week</span>
-                <span className="rounded-full px-2.5 py-1 text-gray-400">Month</span>
-              </div>
-            </div>
-            <div className="flex h-36 items-end justify-between gap-1.5 px-1">
-              {[
-                { d: "Su", h: 42 },
-                { d: "Mo", h: 68 },
-                { d: "Tu", h: 55 },
-                { d: "We", h: 88 },
-                { d: "Th", h: 72 },
-                { d: "Fr", h: 95 },
-                { d: "Sa", h: 60 },
-              ].map(({ d, h }) => (
-                <div key={d} className="flex flex-1 flex-col items-center gap-2">
-                  <div className="flex h-28 w-full items-end justify-center">
-                    <div
-                      className={`w-full max-w-[1.65rem] rounded-t-lg ${
-                        d === "We" ? "bg-aheers-green" : "bg-aheers-green/25"
-                      }`}
-                      style={{ height: `${h}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-medium text-gray-400">{d}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Target progress — mobile-first clean card */}
-          <section className="mobile-stat flex items-center gap-4 p-5 xl:hidden">
-            <div
-              className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
-              style={{
-                background: `conic-gradient(#1B5E3B ${targetPct}%, #e8ece9 0)`,
-              }}
-            >
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-sm font-bold text-aheers-green-dark">
-                {targetPct}%
-              </span>
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-aheers-green">Target orders</p>
-              <p className="mt-1 text-sm font-semibold leading-snug text-aheers-charcoal">
-                You completed <span className="text-aheers-green">{targetPct}%</span> of open order flow this week.
-              </p>
-              <Link href="/admin/orders" className="mt-2 inline-flex text-xs font-bold text-aheers-green">
-                View orders →
-              </Link>
-            </div>
-          </section>
-
-          {/* Quick launch — mobile */}
-          <section className="xl:hidden">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Shortcuts</h2>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { name: "Team chat", href: "/admin/chat", icon: MessageCircle },
-                { name: "Calendar", href: "/admin/calendar", icon: CalendarDays },
-                { name: "Meetings", href: "/admin/meetings", icon: Video },
-                { name: "Tasks", href: "/admin/tasks", icon: CheckSquare },
-              ].map(({ name, href, icon: Icon }) => (
-                <Link
-                  key={name}
-                  href={href}
-                  className="flex items-center gap-3 rounded-[1.25rem] border border-gray-100 bg-white p-3.5 shadow-[0_8px_24px_rgba(13,61,38,0.04)] active:scale-[0.98]"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-aheers-green/10 text-aheers-green">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-sm font-semibold text-aheers-charcoal">{name}</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          {/* Mobile: open tasks list */}
-          <section className="mobile-stat xl:hidden">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Open tasks</h2>
-              <Link href="/admin/tasks" className="text-xs font-bold text-aheers-green">
-                Board
-              </Link>
-            </div>
-            <ul className="space-y-2">
-              {openTasks.slice(0, 4).map((t) => (
-                <li key={t.id} className="flex items-center justify-between gap-2 rounded-2xl bg-[#f7f8f9] px-3 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-gray-900">{t.title}</p>
-                    <p className="text-xs text-gray-400">Due {t.dueDate}</p>
-                  </div>
-                  <StatusBadge status={t.status} />
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Mobile: recent orders as cards */}
-          <section className="xl:hidden">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-base font-semibold text-aheers-green-dark">Recent orders</h2>
-              <Link href="/admin/orders" className="text-xs font-bold text-aheers-green">
-                View all
-              </Link>
-            </div>
-            <ul className="space-y-2.5">
-              {ORDERS.slice(0, 5).map((o) => (
-                <li key={o.id} className="mobile-stat flex items-center gap-3 !p-3.5">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-aheers-mist text-aheers-green">
-                    <ShoppingBag className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-gray-900">{o.customerName}</p>
-                    <p className="text-xs text-gray-400">
-                      {o.id} · {formatCurrency(o.total)}
-                    </p>
-                  </div>
-                  <StatusBadge status={o.status} />
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Desktop / tablet: existing rich layout */}
           <div className="hidden space-y-6 xl:block">
           {/* Calendar + agenda + tasks */}
           <div className="grid gap-5 xl:grid-cols-12">
