@@ -14,6 +14,7 @@ import {
   resolveOrder,
 } from "@/lib/order-helpers";
 import { PackageSearch, ChevronRight, Radio } from "lucide-react";
+import { OrderComplaintForm } from "@/components/order-complaint-form";
 
 function TrackOrderInner() {
   const searchParams = useSearchParams();
@@ -106,6 +107,8 @@ function TrackOrderInner() {
           {queried && !order && (
             <p className="text-center text-sm text-gray-500">No order found for that reference.</p>
           )}
+
+          {queried && order && <OrderComplaintForm order={order} compact />}
 
           <section>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">

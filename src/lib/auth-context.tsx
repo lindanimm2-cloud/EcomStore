@@ -13,6 +13,9 @@ import {
   DEFAULT_SECURITY,
   SETTINGS_STORAGE_KEY,
 } from "@/lib/settings-data";
+import { getOpsSnapshot } from "@/lib/ops-snapshot";
+import { buildFarewellReply } from "@/lib/ops-assistant";
+import { takeLogoutFarewell } from "@/lib/ops-session";
 
 export type UserRole =
   | "customer"
@@ -349,6 +352,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => {
+    const current = userRef.current;
+    if (
+      current &&
+      (current.role === "staff" || current.role === "service_counter" || current.role === "dispatcher")
+    ) {
+      try {
+        const snap = getOpsSnapshot({ email: current.email, name: current.name });
+        takeLogoutFarewell(current.id, buildFarewellReply(snap));
+      } catch {
+        /* ignore */
+      }
+    }
     try {
       sessionStorage.removeItem(EXPIRED_FLAG);
     } catch {

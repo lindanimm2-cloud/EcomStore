@@ -8,6 +8,9 @@ export interface Ticket {
   priority: "low" | "medium" | "high";
   createdAt: string;
   assignee: string;
+  orderId?: string;
+  details?: string;
+  source?: "customer-app" | "staff" | "seed";
 }
 
 export interface Lead {

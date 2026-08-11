@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminHeader, StatusBadge } from "@/components/admin-ui";
-import { TICKETS } from "@/lib/crm-data";
+import type { Ticket } from "@/lib/crm-data";
 import { formatDate } from "@/lib/data";
 import { PrettySelect } from "@/components/pretty-select";
+import { listTickets, subscribeTickets, updateTicketStatus } from "@/lib/ticket-store";
+import { orderHref } from "@/lib/order-helpers";
 
 function TicketsInner() {
-  const [tickets, setTickets] = useState(TICKETS);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filter, setFilter] = useState("all");
+
+  useEffect(() => subscribeTickets(setTickets), []);
 
   const list = tickets.filter((t) => filter === "all" || t.status === filter);
 
   function setStatus(id: string, status: "open" | "pending" | "resolved") {
-    setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+    updateTicketStatus(id, status);
+    setTickets(listTickets());
   }
 
   return (
@@ -44,7 +50,14 @@ function TicketsInner() {
                     <h3 className="font-semibold text-gray-900">{t.subject}</h3>
                     <p className="text-sm text-gray-500">
                       {t.customerName} · {t.category} · {formatDate(t.createdAt)}
+                      {t.source === "customer-app" ? " · App complaint" : ""}
                     </p>
+                    {t.orderId && (
+                      <Link href={orderHref(t.orderId)} className="mt-1 inline-block text-xs font-semibold text-aheers-green hover:underline">
+                        Order {t.orderId} →
+                      </Link>
+                    )}
+                    {t.details && <p className="mt-1 text-xs text-gray-500">{t.details}</p>}
                     <p className="mt-1 text-xs text-gray-400">Assignee: {t.assignee}</p>
                   </div>
                   <div className="flex w-full flex-col gap-2 sm:w-44 sm:items-stretch">

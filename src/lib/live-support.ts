@@ -1,5 +1,7 @@
 /** Shared customer ↔ agent live chat (demo · localStorage + events). */
 
+import { emitOpsEvent } from "@/lib/ops-events";
+
 export type LiveRole = "customer" | "agent" | "system" | "assistant";
 
 export type LiveMsg = {
@@ -147,7 +149,24 @@ export function requestHuman(opts: {
     updatedAt: Date.now(),
   };
   writeAll([session, ...readAll().filter((s) => s.status === "ended").slice(0, 8)]);
+  emitLiveWaiting(session);
   return session;
+}
+
+function emitLiveWaiting(session: LiveSession) {
+  emitOpsEvent({
+    eventId: `LIVE_WAITING:${session.id}`,
+    type: "LIVE_WAITING",
+    title: "Live chat · Talk to human",
+    body: `${session.customerName} wants an agent${session.storeHint ? ` · ${session.storeHint}` : ""}`,
+    priority: "important",
+    category: "today",
+    kind: "system",
+    audience: "staff",
+    href: `/admin/chat?thread=${session.id}`,
+    entityType: "live",
+    entityId: session.id,
+  });
 }
 
 export function appendCustomerMessage(sessionId: string, text: string): LiveSession | undefined {

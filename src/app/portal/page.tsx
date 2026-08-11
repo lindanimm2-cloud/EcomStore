@@ -196,16 +196,15 @@ export default function ClientPortalPage() {
                 <p className="text-sm text-gray-500">No orders yet — start shopping from the Super App home.</p>
               )}
               {myOrders.map((order) => (
-                <Link
-                  key={order.id}
-                  href={
-                    ["pending", "processing", "dispatched"].includes(order.status)
-                      ? `/order/${order.id}/track`
-                      : `/order/${order.id}`
-                  }
-                  className="card block p-4 transition hover:border-aheers-green/20 hover:shadow-lift"
-                >
-                  <div className="flex items-center justify-between">
+                <div key={order.id} className="card p-4">
+                  <Link
+                    href={
+                      ["pending", "processing", "dispatched"].includes(order.status)
+                        ? `/order/${order.id}/track`
+                        : `/order/${order.id}`
+                    }
+                    className="flex items-center justify-between transition hover:opacity-90"
+                  >
                     <div>
                       <p className="font-medium text-aheers-charcoal">{order.id}</p>
                       <p className="text-sm text-gray-500">
@@ -216,8 +215,14 @@ export default function ClientPortalPage() {
                       <p className="font-semibold">{formatCurrency(order.total)}</p>
                       <p className="text-xs capitalize text-gray-400">{order.status}</p>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                  <Link
+                    href={`/order/${order.id}#complaint`}
+                    className="mt-3 inline-block text-xs font-semibold text-amber-800 hover:underline"
+                  >
+                    Report a problem
+                  </Link>
+                </div>
               ))}
             </div>
           </section>

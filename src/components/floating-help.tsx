@@ -167,12 +167,25 @@ export function FloatingHelpButtons() {
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, thinking, aiOpen]);
 
+  const liveHydrated = useRef(false);
+
   useEffect(() => {
     return subscribeLiveSupport((sessions) => {
       const mine =
         (sessionIdRef.current && sessions.find((s) => s.id === sessionIdRef.current)) ||
         sessions.find((s) => s.status === "waiting" || s.status === "active");
       setLiveSession(mine ?? null);
+
+      if (!liveHydrated.current) {
+        liveHydrated.current = true;
+        if (mine && mine.status !== "ended") {
+          sessionIdRef.current = mine.id;
+          setHumanMode(true);
+          for (const m of mine.messages) seenAgentIds.current.add(m.id);
+        }
+        return;
+      }
+
       if (!mine || mine.status === "ended") {
         if (mine?.status === "ended") sessionIdRef.current = null;
         if (!mine || mine.status === "ended") setHumanMode(false);

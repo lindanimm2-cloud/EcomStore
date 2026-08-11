@@ -454,12 +454,12 @@ export function getAssistantReply(input: string, activeStore?: StoreSlug | null)
     };
   }
 
-  if (/return|refund|wrong item|damaged|complaint|missing/.test(lower)) {
+  if (/return|refund|wrong item|damaged|complaint|missing|something wrong/.test(lower)) {
     return {
-      text: "For returns, missing or damaged items: keep your order number, photo if useful, then Talk to human here, WhatsApp, or call the store that fulfilled the order. Service Counter can raise a ticket in Aheers App.",
+      text: "If something is wrong with an order, open that order and tap Report a problem. You can flag a missing, wrong, damaged, late, or incorrectly charged item — it creates a support ticket for Service Counter. You can also Talk to human, WhatsApp, or call the store.",
       links: [
-        { label: "Track order", href: "/track-order" },
-        { label: "My account", href: "/portal" },
+        { label: "Track / find order", href: "/track-order" },
+        { label: "My orders", href: "/portal" },
       ],
     };
   }

@@ -22,9 +22,8 @@ function AdminChrome({ children }: { children: ReactNode }) {
         {children}
       </div>
       <AdminMobileNav onOpenMenu={() => window.dispatchEvent(new Event("aheers:open-admin-menu"))} />
-      {/* Desktop / tablet helpers — stay off the primary mobile chrome */}
+      <CrmSmartLens />
       <div className="hidden lg:contents">
-        <CrmSmartLens />
         <SettingsFab />
       </div>
     </>

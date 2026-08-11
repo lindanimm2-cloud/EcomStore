@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
+import { OrderComplaintForm } from "@/components/order-complaint-form";
 
 export default function OrderDetailPage() {
   const params = useParams();
@@ -210,6 +211,8 @@ export default function OrderDetailPage() {
               )}
             </dl>
           </section>
+
+          <OrderComplaintForm order={order} />
 
           <div className="flex flex-wrap gap-3">
             <Link href="/track-order" className="btn-secondary">

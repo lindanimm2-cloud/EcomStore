@@ -26,6 +26,7 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
+import { OrderComplaintForm } from "@/components/order-complaint-form";
 
 export default function OrderLiveTrackPage() {
   const params = useParams();
@@ -235,6 +236,8 @@ export default function OrderLiveTrackPage() {
               Full order details →
             </Link>
           </section>
+
+          <OrderComplaintForm order={order} compact />
         </div>
       </main>
       <SiteFooter />

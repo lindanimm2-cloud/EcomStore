@@ -4,6 +4,7 @@ import { FormEvent, useState, useEffect, ReactNode, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, UserRole, DEMO_USERS, consumeSessionExpiredFlag } from "@/lib/auth-context";
+import { consumeFarewellBanner } from "@/lib/ops-session";
 import { ReportThisButton, reportAppError } from "@/components/report-issue";
 
 const ROLE_HOME: Record<UserRole, string> = {
@@ -150,10 +151,12 @@ function LoginFormInner({
   const [otp, setOtp] = useState("123456");
   const [error, setError] = useState("");
   const [expiredNotice, setExpiredNotice] = useState(false);
+  const [farewell, setFarewell] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (consumeSessionExpiredFlag()) setExpiredNotice(true);
+    setFarewell(consumeFarewellBanner());
   }, []);
 
   function homeFor(role: UserRole) {
@@ -209,6 +212,18 @@ function LoginFormInner({
       <p className={theme.brand}>{brandLabel}</p>
       <h1 className={`mt-4 font-display text-2xl font-semibold md:text-3xl ${titleColor}`}>{title}</h1>
       <p className={`mt-2 text-sm leading-relaxed ${subColor}`}>{subtitle}</p>
+
+      {farewell && (
+        <div
+          className={
+            variant === "customer" || variant === "trade"
+              ? "mt-4 rounded-2xl border border-aheers-green/20 bg-aheers-mist px-3.5 py-2.5 text-sm text-aheers-green-dark"
+              : "mt-4 rounded-lg border border-aheers-gold/30 bg-aheers-gold/10 px-3.5 py-2.5 text-sm text-aheers-gold"
+          }
+        >
+          {farewell}
+        </div>
+      )}
 
       {expiredNotice && (
         <div

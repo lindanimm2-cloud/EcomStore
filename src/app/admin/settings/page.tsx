@@ -192,7 +192,7 @@ export default function SettingsPage() {
       if (data.integrations) setIntegrations(data.integrations);
       if (data.profile) setProfile(data.profile);
       if (data.security) setSecurity(data.security);
-      if (data.display) setDisplay(data.display);
+      if (data.display) setDisplay({ ...DEFAULT_DISPLAY, ...data.display });
       if (data.returnDays) setReturnDays(data.returnDays);
       if (data.freeDeliveryOver) setFreeDeliveryOver(data.freeDeliveryOver);
       if (data.maxStops) setMaxStops(data.maxStops);
@@ -604,8 +604,32 @@ export default function SettingsPage() {
             <CheckCard
               checked={display.smartLensOnLaunch}
               onChange={(v) => patchDisplay("smartLensOnLaunch", v)}
-              label="Open Aheers Lens on launch"
-              hint="Show the floating Lens bar when Ops Hub loads."
+              label="Smart Lens"
+              hint="Show the floating Dynamic Island on every CRM page."
+            />
+            <CheckCard
+              checked={display.lensQuietMode}
+              onChange={(v) => patchDisplay("lensQuietMode", v)}
+              label="Quiet mode"
+              hint="No speech from the Lens, even for urgent notices."
+            />
+            <CheckCard
+              checked={display.lensVoice}
+              onChange={(v) => patchDisplay("lensVoice", v)}
+              label="Lens voice"
+              hint="Speak urgent notices. High-priority needs auto-speak."
+            />
+            <CheckCard
+              checked={display.lensAutoSpeak}
+              onChange={(v) => patchDisplay("lensAutoSpeak", v)}
+              label="Auto-speak high priority"
+              hint="Also speak HIGH notices when voice is on."
+            />
+            <CheckCard
+              checked={display.lensDailyBriefing}
+              onChange={(v) => patchDisplay("lensDailyBriefing", v)}
+              label="Daily briefing toasts"
+              hint="Allow the talk bubble for daily briefing notices."
             />
           </div>
           <p className="mt-4 text-xs text-gray-500 lg:text-white/35">

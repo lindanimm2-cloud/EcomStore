@@ -138,6 +138,10 @@ export interface DisplaySettings {
   showMeetingPreviews: boolean;
   denserTables: boolean;
   smartLensOnLaunch: boolean;
+  lensVoice: boolean;
+  lensAutoSpeak: boolean;
+  lensDailyBriefing: boolean;
+  lensQuietMode: boolean;
 }
 
 export const DEFAULT_PROFILE: ProfileSettings = {
@@ -162,6 +166,10 @@ export const DEFAULT_DISPLAY: DisplaySettings = {
   showMeetingPreviews: true,
   denserTables: false,
   smartLensOnLaunch: true,
+  lensVoice: true,
+  lensAutoSpeak: false,
+  lensDailyBriefing: true,
+  lensQuietMode: false,
 };
 
 export const SETTINGS_STORAGE_KEY = "aheers-settings-v1";
